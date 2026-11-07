@@ -301,3 +301,46 @@ class HookExecutionResult(BaseModel):
     allowed: bool = True
     reason: Optional[str] = None
     context_data: Dict[str, Any] = Field(default_factory=dict)
+
+class ADRStatus(str, Enum):
+    PROPOSED = "PROPOSED"
+    ACCEPTED = "ACCEPTED"
+    SUPERSEDED = "SUPERSEDED"
+    DEPRECATED = "DEPRECATED"
+    REJECTED = "REJECTED"
+
+class ArchitectureDecisionRecord(BaseModel):
+    number: int
+    title: str
+    status: ADRStatus = ADRStatus.ACCEPTED
+    context: str = ""
+    decision: str = ""
+    consequences: str = ""
+    date: str = ""
+    path: str = ""
+
+class CleanArchViolation(BaseModel):
+    source_file: str
+    imported_module: str
+    violation_type: str
+    rule_description: str
+    severity: str = "CRITICAL"
+
+class C4DiagramType(str, Enum):
+    CONTEXT = "CONTEXT"
+    CONTAINER = "CONTAINER"
+    COMPONENT = "COMPONENT"
+    CODE = "CODE"
+
+class C4DiagramDefinition(BaseModel):
+    title: str
+    diagram_type: C4DiagramType
+    mermaid_code: str
+    elements: List[str] = Field(default_factory=list)
+    relationships: List[str] = Field(default_factory=list)
+
+class ArchitectureHealthReport(BaseModel):
+    is_clean_arch: bool = True
+    layer_violations: List[str] = Field(default_factory=list)
+    adr_coverage: float = 100.0
+    docs_synchronized: bool = True
