@@ -8,12 +8,56 @@ from rich.panel import Panel
 from dh_harness.interaction.classifier import classify_interaction
 from dh_harness.sdk.adapter import AntigravitySDKAdapter
 from dh_harness.memory.engine import MemoryEngine
+from dh_harness.tasks.manager import TaskManager
+from dh_harness.continuity.engine import ContinuityEngine
+from dh_harness.core.contracts import HierarchicalTask, TaskState
 
 app = typer.Typer(
     name="dh-harness",
     help="DH Engineering Harness for Google Antigravity - Agentic Software Engineering & TDD Governance"
 )
 console = Console()
+
+def _load_project_tasks() -> TaskManager:
+    """Loads tasks from .project and engine into TaskManager."""
+    mgr = TaskManager()
+    # Baseline project tasks representing current roadmap progress
+    t1 = HierarchicalTask(
+        id="DH-001",
+        title="Foundation, SDK Validation & Dual Packaging",
+        description="Bootstrap AEE, Antigravity SDK, and npm/python wrappers",
+        state=TaskState.DONE,
+        evidence=["PR #1 merged into main with Graviton Task 1 COMPLETED"],
+        priority=1
+    )
+    t2 = HierarchicalTask(
+        id="DH-002",
+        title="Master Orchestrator, DAG & Project Continuity Engine",
+        description="Implement DAG dependency graph, task state machine, and continuity engine",
+        state=TaskState.IN_PROGRESS,
+        dependencies=["DH-001"],
+        priority=1
+    )
+    t3 = HierarchicalTask(
+        id="DH-003",
+        title="Mandatory TDD Advanced Engine & False Test Detector",
+        description="Detect empty tests, trivial assertions, and auto-enforce RED state",
+        state=TaskState.BACKLOG,
+        dependencies=["DH-002"],
+        priority=2
+    )
+    t4 = HierarchicalTask(
+        id="DH-004",
+        title="Agent Ecosystem & Specialized Roles Catalog",
+        description="Implement specialized agent registry according to info.md Section 4",
+        state=TaskState.BACKLOG,
+        dependencies=["DH-002"],
+        priority=3
+    )
+
+    for t in [t1, t2, t3, t4]:
+        mgr.register_task(t)
+    return mgr
 
 @app.command()
 def status():
@@ -47,6 +91,47 @@ def status():
     table.add_row("Persistent Memory", mem_status, "Rules, specs, and status tracking")
 
     console.print(table)
+
+@app.command(name="continue")
+def continue_work():
+    """Diagnose project continuity and recommend what to do next ('¿Con qué continuamos?')."""
+    mgr = _load_project_tasks()
+    engine = ContinuityEngine(mgr)
+    report = engine.generate_continuity_report()
+
+    console.print(Panel(
+        f"[bold cyan]PROJECT CONTINUITY & WORK PLANNING ENGINE[/bold cyan]\n"
+        f"[bold yellow]¿Con qué continuamos hoy?[/bold yellow]",
+        title="Continuity Dashboard",
+        expand=False
+    ))
+
+    table = Table(title="Project Progress Overview")
+    table.add_column("State", style="cyan")
+    table.add_column("Count", style="magenta")
+    table.add_column("Tasks", style="green")
+
+    table.add_row("Completed", str(report.completed_count), ", ".join(report.completed_tasks) or "None")
+    table.add_row("In Progress", str(report.in_progress_count), ", ".join(report.in_progress_tasks) or "None")
+    table.add_row("Pending", str(report.pending_count), ", ".join(report.pending_tasks) or "None")
+    table.add_row("Blocked", str(report.blocked_count), ", ".join(report.blocked_tasks) or "None")
+    console.print(table)
+
+    if report.parallel_candidates:
+        console.print(f"\n[bold green]⚡ Parallel Executable Candidates (DAG Ready):[/bold green] {', '.join(report.parallel_candidates)}")
+
+    console.print(Panel(
+        f"[bold]Recommended Next Task:[/bold] [bold green]{report.recommended_task}[/bold green]\n"
+        f"[bold]Rationale:[/bold] {report.rationale}",
+        title="Recommended Continuation (RECOMMENDED mode)",
+        border_style="green"
+    ))
+
+# Alias command
+@app.command()
+def next():
+    """Alias for continue."""
+    continue_work()
 
 @app.command()
 def classify(prompt: str):

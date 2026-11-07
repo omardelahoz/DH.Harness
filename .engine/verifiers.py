@@ -41,14 +41,23 @@ def check_file_contains(file_path, expected_text):
         print(f"[-] Verifier Error: Could not read {file_path}: {e}")
         return False
 
+def get_python_executable():
+    """Returns .venv python executable if present, otherwise sys.executable."""
+    is_win = sys.platform == "win32"
+    venv_py = os.path.join(os.getcwd(), ".venv", "Scripts", "python.exe") if is_win else os.path.join(os.getcwd(), ".venv", "bin", "python")
+    if os.path.exists(venv_py):
+        return venv_py
+    return sys.executable
+
 def check_python_test(test_script_path, cwd=None):
     """Runs a Python script and verifies if it exits with code 0."""
     if not os.path.exists(test_script_path):
         print(f"[-] Verifier: Test script {test_script_path} not found.")
         return False
     print(f"[*] Verifier: Running test script {test_script_path}...")
+    py_bin = get_python_executable()
     try:
-        res = subprocess.run([sys.executable, test_script_path], capture_output=True, text=True, cwd=cwd, timeout=60)
+        res = subprocess.run([py_bin, test_script_path], capture_output=True, text=True, cwd=cwd, timeout=60)
         ok = res.returncode == 0
         print(f"[*] Verifier: Exit code {res.returncode}. Output:\n{res.stdout}\nErrors:\n{res.stderr}")
         return ok
@@ -103,8 +112,9 @@ def check_npm_binary(bin_path):
 def check_pytest_suite(test_dir="tests"):
     """Runs pytest on test_dir and verifies all tests pass."""
     print(f"[*] Verifier: Running pytest on {test_dir}...")
+    py_bin = get_python_executable()
     try:
-        res = subprocess.run([sys.executable, "-m", "pytest", test_dir], capture_output=True, text=True)
+        res = subprocess.run([py_bin, "-m", "pytest", test_dir], capture_output=True, text=True)
         ok = res.returncode == 0
         print(f"[*] Verifier: pytest exit code {res.returncode}.\nOutput:\n{res.stdout}\nStderr:\n{res.stderr}")
         return ok

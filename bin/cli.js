@@ -46,6 +46,7 @@ Agentic Software Engineering, TDD & Workflow Governance
 
 \x1b[1mCORE COMMANDS:\x1b[0m
   \x1b[32mstatus\x1b[0m                  Show project health, AEE tasks, and memory dashboard
+  \x1b[32mcontinue, next\x1b[0m          Diagnose continuity and recommend next task (¿Con qué continuamos?)
   \x1b[32minit\x1b[0m                    Initialize harness workspace and Graviton AEE engine
   \x1b[32mclassify <prompt>\x1b[0m       Classify interaction mode (Conversational, BugFix, Dev, etc.)
   \x1b[32mtdd <subcommand>\x1b[0m        TDD engine commands (red, green, verify, status)
