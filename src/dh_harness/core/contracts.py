@@ -201,3 +201,25 @@ class WorkflowExecutionResult(BaseModel):
     completed_stages: List[str] = Field(default_factory=list)
     evidence: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
+
+class GitProvider(str, Enum):
+    GITHUB = "GITHUB"
+    AZURE_DEVOPS = "AZURE_DEVOPS"
+    GITLAB = "GITLAB"
+    BITBUCKET = "BITBUCKET"
+    LOCAL = "LOCAL"
+
+class RepoDiagnostics(BaseModel):
+    is_git: bool
+    active_branch: str
+    remote_provider: GitProvider
+    remote_url: Optional[str] = None
+    is_clean: bool = True
+    modified_files: List[str] = Field(default_factory=list)
+    untracked_files: List[str] = Field(default_factory=list)
+
+class DoDVerificationResult(BaseModel):
+    task_id: str
+    satisfied: bool
+    missing_criteria: List[str] = Field(default_factory=list)
+    evidence_collected: List[str] = Field(default_factory=list)

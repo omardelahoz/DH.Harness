@@ -48,6 +48,12 @@ workflows_app = typer.Typer(
 )
 app.add_typer(workflows_app, name="workflows")
 
+git_app = typer.Typer(
+    name="git",
+    help="Git & repository governance, branch policies, and DoD verification (info.md Section 11)"
+)
+app.add_typer(git_app, name="git")
+
 console = Console()
 
 def _load_project_tasks() -> TaskManager:
@@ -102,7 +108,12 @@ def _load_project_tasks() -> TaskManager:
         title="Skills Registry & Workflow Engine",
         description="Implement dynamic skill discovery, capability matching, and composable workflows",
         state=TaskState.DONE,
-        evidence=["Graviton Task 6 COMPLETED (Skills Registry, Composable Workflows, Runner)"],
+        pr_number=6,
+        evidence=[
+            "PR #6 merged into main",
+            "pytest test suite passed 78 tests",
+            "Independent review approved by 'independent-code-reviewer'"
+        ],
         dependencies=["DH-005"],
         priority=1
     )
@@ -110,12 +121,26 @@ def _load_project_tasks() -> TaskManager:
         id="DH-007",
         title="Git Governance, Branch Policies & PR Delivery",
         description="Implement Git repository manager, branch protection, commit policies, and PR integration",
-        state=TaskState.READY,
+        state=TaskState.DONE,
+        pr_number=7,
+        evidence=[
+            "PR #7 merged into main",
+            "pytest test suite passed 83 tests",
+            "Independent review approved by 'independent-code-reviewer'"
+        ],
         dependencies=["DH-006"],
         priority=1
     )
+    t8 = HierarchicalTask(
+        id="DH-008",
+        title="Security & Secrets Engine",
+        description="Implement AST secret scanner, dependency vulnerability auditing, and fail-closed security policies",
+        state=TaskState.READY,
+        dependencies=["DH-007"],
+        priority=1
+    )
 
-    for t in [t1, t2, t3, t4, t5, t6, t7]:
+    for t in [t1, t2, t3, t4, t5, t6, t7, t8]:
         mgr.register_task(t)
     return mgr
 
@@ -495,6 +520,89 @@ def describe_workflow(workflow_id: str = typer.Argument(..., help="Unique identi
         expand=False
     ))
     console.print(table)
+
+@git_app.command(name="status")
+def git_status():
+    """Diagnose repository, provider, active branch, and cleanliness."""
+    from dh_harness.git.manager import GitGovernanceManager
+    mgr = GitGovernanceManager()
+    diag = mgr.diagnose_repo()
+
+    console.print(Panel(
+        f"[bold cyan]Git & Repository Governance Diagnostics[/bold cyan]\n"
+        f"Repository Path: [yellow]{mgr.repo_path}[/yellow]",
+        title="Git Repository Governance",
+        expand=False
+    ))
+
+    table = Table(title="Repository Status & Policies")
+    table.add_column("Property", style="cyan")
+    table.add_column("Value", style="magenta")
+    table.add_column("Status / Policy", style="green")
+
+    table.add_row("Is Git Repository", str(diag.is_git), "[green]Verified[/green]" if diag.is_git else "[red]Not a git repo[/red]")
+    table.add_row("Active Branch", diag.active_branch, "[yellow]Protected[/yellow]" if diag.active_branch in {"main", "master"} else "[green]Feature/Work Branch[/green]")
+    table.add_row("Remote Provider", diag.remote_provider.value, diag.remote_url or "None (Local only)")
+    table.add_row("Clean Working Tree", str(diag.is_clean), "[green]Clean[/green]" if diag.is_clean else f"[yellow]{len(diag.modified_files)} modified, {len(diag.untracked_files)} untracked[/yellow]")
+
+    console.print(table)
+
+@git_app.command(name="validate-branch")
+def git_validate_branch(branch: str = typer.Argument(..., help="Branch name to validate")):
+    """Validate that a branch name follows policy and is not a protected branch."""
+    from dh_harness.git.manager import GitGovernanceManager, ProtectedBranchViolationError
+    mgr = GitGovernanceManager()
+    try:
+        valid = mgr.validate_branch_name(branch)
+        if valid:
+            console.print(f"[bold green]✔ Branch '{branch}' satisfies naming policy.[/bold green]")
+        else:
+            console.print(f"[bold red]✖ Branch '{branch}' violates naming policy.[/bold red] Expected pattern: (feature|bugfix|refactor|hotfix)/[name]")
+            raise typer.Exit(code=1)
+    except ProtectedBranchViolationError as e:
+        console.print(f"[bold red]✖ Protected Branch Violation:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+@git_app.command(name="validate-commit")
+def git_validate_commit(message: str = typer.Argument(..., help="Commit message to validate")):
+    """Validate that a commit message complies with Conventional Commits specification."""
+    from dh_harness.git.manager import GitGovernanceManager
+    mgr = GitGovernanceManager()
+    if mgr.validate_commit_message(message):
+        console.print(f"[bold green]✔ Commit message follows Conventional Commits format.[/bold green]")
+    else:
+        console.print(f"[bold red]✖ Commit message violates Conventional Commits format.[/bold red]\nExpected format: feat|fix|docs|refactor|test|chore[(scope)]: description")
+        raise typer.Exit(code=1)
+
+@git_app.command(name="check-dod")
+def git_check_dod(task_id: str = typer.Argument(..., help="Task ID to verify Definition of Done")):
+    """Verify Definition of Done criteria for a given task."""
+    mgr = _load_project_tasks()
+    task = mgr.get_task(task_id)
+    if not task:
+        console.print(f"[bold red]Error:[/bold red] Task '{task_id}' not found.")
+        raise typer.Exit(code=1)
+
+    from dh_harness.git.manager import GitGovernanceManager
+    git_mgr = GitGovernanceManager()
+    result = git_mgr.verify_definition_of_done(task, require_pr=True)
+
+    if result.satisfied:
+        console.print(Panel(
+            f"[bold green]✔ Definition of Done SATISFIED for task '{task_id}'![/bold green]\n"
+            f"Evidence Count: {len(result.evidence_collected)}",
+            title=f"DoD Verification: {task_id}",
+            border_style="green"
+        ))
+    else:
+        missing_str = "\n".join(f"- {m}" for m in result.missing_criteria)
+        console.print(Panel(
+            f"[bold red]✖ Definition of Done NOT satisfied for task '{task_id}'![/bold red]\n\n"
+            f"[bold]Missing Criteria:[/bold]\n{missing_str}",
+            title=f"DoD Verification: {task_id}",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
 
 if __name__ == "__main__":
     app()
