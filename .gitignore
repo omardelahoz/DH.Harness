@@ -61,3 +61,4 @@ package-lock.json
 *.db-journal
 *.db-wal
 .engine/agent_engine.db
+.project/memory/

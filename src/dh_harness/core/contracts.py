@@ -135,3 +135,26 @@ class QualityGateResult(BaseModel):
     passed: bool
     details: Dict[str, Any] = Field(default_factory=dict)
     message: str = ""
+
+class MemoryLevel(str, Enum):
+    GLOBAL = "GLOBAL"
+    PROJECT = "PROJECT"
+    TASK = "TASK"
+    SESSION = "SESSION"
+    KNOWLEDGE = "KNOWLEDGE"
+
+class SessionCheckpoint(BaseModel):
+    session_id: str
+    active_task_id: Optional[str] = None
+    active_branch: str = "main"
+    recent_actions: List[str] = Field(default_factory=list)
+    pending_steps: List[str] = Field(default_factory=list)
+    created_at: str = ""
+    checksum: str = ""
+
+class KnowledgeItem(BaseModel):
+    key: str
+    category: str
+    summary: str
+    content: str
+    tags: List[str] = Field(default_factory=list)
