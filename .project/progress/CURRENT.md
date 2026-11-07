@@ -1,18 +1,18 @@
 # Current Progress (`.project/progress/CURRENT.md`)
 
-- **Fase Actual:** Fase 4 Completada con Éxito (Memory Engine, Session Recovery & Checkpoints).
-- **Estado de AEE:** Task 5 `🟢 COMPLETED` (5 pasos verificados en SQLite con exit code 0 y verificadores Python).
+- **Fase Actual:** Fase 5 Completada con Éxito (Skills Registry & Composable Workflow Engine).
+- **Estado de AEE:** Task 6 `🟢 COMPLETED` (5 pasos verificados en SQLite con exit code 0 y verificadores Python).
 - **Hitos Alcanzados:**
-  1. Contratos core `MemoryLevel`, `SessionCheckpoint`, `KnowledgeItem` agregados en `src/dh_harness/core/contracts.py`.
-  2. Motor de memoria multinivel (`GLOBAL`, `PROJECT`, `TASK`, `SESSION`, `KNOWLEDGE`) en `src/dh_harness/memory/levels.py`.
-  3. Filtro de seguridad anti-secretos que intercepta y bloquea tokens (`ghp_`), llaves RSA y credenciales privadas (`SecretDetectedError`).
-  4. Gestor de puntos de control con hashing SHA-256 e integridad determinista (`src/dh_harness/memory/checkpoints.py`).
-  5. Detección de umbrales y generador de compact digest para evitar pérdida de contexto en Antigravity (`src/dh_harness/memory/truncation.py`).
-  6. Comandos CLI `memory status`, `checkpoint`, `recover` integrados y probados vía `node bin/cli.js memory status`.
-  7. 69 pruebas unitarias automatizadas aprobadas (0 warnings, 0 tests falsos).
-  8. ADR-007 documentado en `docs/decisions/ADR-007-memory-engine-and-session-recovery.md`.
-  9. Especificación técnica registrada en `.project/specs/005-memory-and-session-recovery/SPEC.md`.
+  1. Contratos core `SkillCategory`, `SkillDefinition`, `WorkflowStage`, `WorkflowDefinition`, `WorkflowExecutionResult` integrados en `src/dh_harness/core/contracts.py`.
+  2. Catálogo canónico con 6 habilidades de ingeniería en `src/dh_harness/skills/catalog.py`.
+  3. `SkillsRegistry` operativo en `src/dh_harness/skills/registry.py` con resolución dinámica por intenciones (`match_skills_for_task`), triggers y anti-triggers.
+  4. Catálogo de workflows estándar en `src/dh_harness/workflows/catalog.py` (Feature Development, BugFix, Security Audit, API Development).
+  5. `WorkflowRunner` ejecutable en `src/dh_harness/workflows/runner.py` con verificación estricta de dependencias y garantía de revisión independiente.
+  6. Comandos CLI `skills list`, `show`, `match` y `workflows list`, `describe` integrados y probados vía `node bin/cli.js`.
+  7. 78 pruebas unitarias automatizadas aprobadas (0 warnings, 0 tests falsos).
+  8. ADR-008 documentado en `docs/decisions/ADR-008-skills-registry-and-composable-workflows.md`.
+  9. Especificación técnica registrada en `.project/specs/006-skills-and-workflows/SPEC.md`.
 - **Próximas Actividades:**
-  - Publicar cambios en la rama `feature/DH-005-memory-and-session-recovery`.
-  - Crear Pull Request #5 hacia `main` en GitHub.
-  - Iniciar Fase 5 (`DH-006`: Skills Registry & Workflow Engine).
+  - Publicar cambios en la rama `feature/DH-006-skills-and-workflows`.
+  - Crear Pull Request #6 hacia `main` en GitHub.
+  - Iniciar Fase 6 (`DH-007`: Git Governance, Branch Policies & PR Delivery).

@@ -36,6 +36,18 @@ memory_app = typer.Typer(
 )
 app.add_typer(memory_app, name="memory")
 
+skills_app = typer.Typer(
+    name="skills",
+    help="Engineering skills catalog and discovery (info.md Section 5)"
+)
+app.add_typer(skills_app, name="skills")
+
+workflows_app = typer.Typer(
+    name="workflows",
+    help="Composable workflow engine and execution (info.md Section 6)"
+)
+app.add_typer(workflows_app, name="workflows")
+
 console = Console()
 
 def _load_project_tasks() -> TaskManager:
@@ -89,12 +101,21 @@ def _load_project_tasks() -> TaskManager:
         id="DH-006",
         title="Skills Registry & Workflow Engine",
         description="Implement dynamic skill discovery, capability matching, and composable workflows",
-        state=TaskState.READY,
+        state=TaskState.DONE,
+        evidence=["Graviton Task 6 COMPLETED (Skills Registry, Composable Workflows, Runner)"],
         dependencies=["DH-005"],
         priority=1
     )
+    t7 = HierarchicalTask(
+        id="DH-007",
+        title="Git Governance, Branch Policies & PR Delivery",
+        description="Implement Git repository manager, branch protection, commit policies, and PR integration",
+        state=TaskState.READY,
+        dependencies=["DH-006"],
+        priority=1
+    )
 
-    for t in [t1, t2, t3, t4, t5, t6]:
+    for t in [t1, t2, t3, t4, t5, t6, t7]:
         mgr.register_task(t)
     return mgr
 
@@ -354,6 +375,126 @@ def memory_recover():
         title=f"Recovered Session: {chk.session_id}",
         border_style="cyan"
     ))
+
+@skills_app.command(name="list")
+def list_skills():
+    """List all registered engineering skills from the canonical catalog."""
+    from dh_harness.skills.registry import SkillsRegistry
+    reg = SkillsRegistry()
+    reg.load_defaults()
+    skills = reg.list_skills()
+
+    table = Table(title="Engineering Skills Catalog (info.md Section 5)")
+    table.add_column("Skill ID", style="cyan", no_wrap=True)
+    table.add_column("Name", style="bold white")
+    table.add_column("Category", style="magenta")
+    table.add_column("Required Tools", style="green")
+
+    for s in skills:
+        tools_str = ", ".join(t.value for t in s.required_tools)
+        table.add_row(s.id, s.name, s.category.value, tools_str)
+
+    console.print(table)
+
+@skills_app.command(name="show")
+def show_skill(skill_id: str = typer.Argument(..., help="Unique identifier of the skill")):
+    """Show details, triggers, guidelines, and constraints of an engineering skill."""
+    from dh_harness.skills.registry import SkillsRegistry
+    reg = SkillsRegistry()
+    reg.load_defaults()
+    skill = reg.get_skill(skill_id)
+    if not skill:
+        console.print(f"[bold red]Error:[/bold red] Skill '{skill_id}' not found.")
+        raise typer.Exit(code=1)
+
+    triggers_str = ", ".join(skill.triggers)
+    anti_triggers_str = ", ".join(skill.anti_triggers) or "None"
+    tools_str = ", ".join(t.value for t in skill.required_tools)
+    guidelines_str = "\n".join(f"- {g}" for g in skill.guidelines)
+
+    console.print(Panel(
+        f"[bold cyan]ID:[/bold cyan] {skill.id}\n"
+        f"[bold]Name:[/bold] {skill.name}\n"
+        f"[bold magenta]Category:[/bold magenta] {skill.category.value}\n"
+        f"[bold]Description:[/bold] {skill.description}\n\n"
+        f"[bold green]Required Tools:[/bold green] {tools_str}\n"
+        f"[bold yellow]Triggers:[/bold yellow] {triggers_str}\n"
+        f"[bold red]Anti-Triggers:[/bold red] {anti_triggers_str}\n\n"
+        f"[bold]Mandatory Guidelines:[/bold]\n{guidelines_str}",
+        title=f"Skill Specification: {skill.name}",
+        expand=False
+    ))
+
+@skills_app.command(name="match")
+def match_skills(prompt: str = typer.Argument(..., help="Task prompt or user requirement")):
+    """Match appropriate skills for a given task requirement based on triggers."""
+    from dh_harness.skills.registry import SkillsRegistry
+    reg = SkillsRegistry()
+    reg.load_defaults()
+    matched = reg.match_skills_for_task(prompt)
+
+    if not matched:
+        console.print(f"[yellow]No specialized skills matched for prompt:[/yellow] '{prompt}'")
+        return
+
+    table = Table(title=f"Matched Skills for: '{prompt[:40]}...'")
+    table.add_column("Skill ID", style="cyan")
+    table.add_column("Category", style="magenta")
+    table.add_column("Matching Triggers", style="green")
+
+    for s in matched:
+        matching_triggers = [t for t in s.triggers if t.lower() in prompt.lower()]
+        table.add_row(s.id, s.category.value, ", ".join(matching_triggers))
+
+    console.print(table)
+
+@workflows_app.command(name="list")
+def list_workflows():
+    """List all composable workflows registered in the workflow engine."""
+    from dh_harness.workflows.runner import WorkflowRunner
+    runner = WorkflowRunner()
+    workflows = runner.list_workflows()
+
+    table = Table(title="Composable Workflow Engine Catalog (info.md Section 6)")
+    table.add_column("Workflow ID", style="cyan", no_wrap=True)
+    table.add_column("Name", style="bold white")
+    table.add_column("Stages", style="magenta")
+    table.add_column("Description", style="green")
+
+    for wf in workflows:
+        table.add_row(wf.id, wf.name, str(len(wf.stages)), wf.description)
+
+    console.print(table)
+
+@workflows_app.command(name="describe")
+def describe_workflow(workflow_id: str = typer.Argument(..., help="Unique identifier of the workflow")):
+    """Describe stages, roles, and dependencies of a composable workflow."""
+    from dh_harness.workflows.runner import WorkflowRunner
+    runner = WorkflowRunner()
+    wf = runner.get_workflow(workflow_id)
+    if not wf:
+        console.print(f"[bold red]Error:[/bold red] Workflow '{workflow_id}' not found.")
+        raise typer.Exit(code=1)
+
+    table = Table(title=f"Workflow Stages: {wf.name}")
+    table.add_column("Order", style="dim")
+    table.add_column("Stage ID", style="cyan")
+    table.add_column("Name", style="bold white")
+    table.add_column("Required Role", style="magenta")
+    table.add_column("Depends On", style="yellow")
+
+    for idx, stage in enumerate(wf.stages, 1):
+        deps_str = ", ".join(stage.depends_on) or "None"
+        table.add_row(str(idx), stage.id, stage.name, stage.required_role.value, deps_str)
+
+    console.print(Panel(
+        f"[bold cyan]ID:[/bold cyan] {wf.id}\n"
+        f"[bold]Name:[/bold] {wf.name}\n"
+        f"[bold]Description:[/bold] {wf.description}",
+        title="Workflow Overview",
+        expand=False
+    ))
+    console.print(table)
 
 if __name__ == "__main__":
     app()

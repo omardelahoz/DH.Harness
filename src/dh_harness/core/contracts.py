@@ -158,3 +158,46 @@ class KnowledgeItem(BaseModel):
     summary: str
     content: str
     tags: List[str] = Field(default_factory=list)
+
+class SkillCategory(str, Enum):
+    ENGINEERING_CORE = "ENGINEERING_CORE"
+    BACKEND = "BACKEND"
+    FRONTEND = "FRONTEND"
+    DATABASE = "DATABASE"
+    UI_UX = "UI_UX"
+    TESTING = "TESTING"
+    SECURITY = "SECURITY"
+    DEVOPS = "DEVOPS"
+    ARCHITECTURE = "ARCHITECTURE"
+
+class SkillDefinition(BaseModel):
+    id: str
+    name: str
+    category: SkillCategory
+    description: str = ""
+    triggers: List[str] = Field(default_factory=list)
+    anti_triggers: List[str] = Field(default_factory=list)
+    required_tools: List[ToolPermission] = Field(default_factory=list)
+    guidelines: List[str] = Field(default_factory=list)
+
+class WorkflowStage(BaseModel):
+    id: str
+    name: str
+    required_role: AgentRole
+    required_skills: List[str] = Field(default_factory=list)
+    is_mandatory: bool = True
+    depends_on: List[str] = Field(default_factory=list)
+
+class WorkflowDefinition(BaseModel):
+    id: str
+    name: str
+    description: str = ""
+    stages: List[WorkflowStage] = Field(default_factory=list)
+
+class WorkflowExecutionResult(BaseModel):
+    workflow_id: str
+    task_id: str
+    status: str
+    completed_stages: List[str] = Field(default_factory=list)
+    evidence: List[str] = Field(default_factory=list)
+    errors: List[str] = Field(default_factory=list)
