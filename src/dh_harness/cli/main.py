@@ -11,17 +11,23 @@ from dh_harness.memory.engine import MemoryEngine
 from dh_harness.tasks.manager import TaskManager
 from dh_harness.continuity.engine import ContinuityEngine
 from dh_harness.core.contracts import HierarchicalTask, TaskState
+from dh_harness.governance.gates import TestQualityGate
 
 app = typer.Typer(
     name="dh-harness",
     help="DH Engineering Harness for Google Antigravity - Agentic Software Engineering & TDD Governance"
 )
+tdd_app = typer.Typer(
+    name="tdd",
+    help="Mandatory TDD Engine commands (audit-tests, guard, evidence)"
+)
+app.add_typer(tdd_app, name="tdd")
+
 console = Console()
 
 def _load_project_tasks() -> TaskManager:
     """Loads tasks from .project and engine into TaskManager."""
     mgr = TaskManager()
-    # Baseline project tasks representing current roadmap progress
     t1 = HierarchicalTask(
         id="DH-001",
         title="Foundation, SDK Validation & Dual Packaging",
@@ -34,25 +40,26 @@ def _load_project_tasks() -> TaskManager:
         id="DH-002",
         title="Master Orchestrator, DAG & Project Continuity Engine",
         description="Implement DAG dependency graph, task state machine, and continuity engine",
-        state=TaskState.IN_PROGRESS,
+        state=TaskState.DONE,
+        evidence=["PR #2 merged into main with Graviton Task 2 COMPLETED"],
         dependencies=["DH-001"],
         priority=1
     )
     t3 = HierarchicalTask(
         id="DH-003",
         title="Mandatory TDD Advanced Engine & False Test Detector",
-        description="Detect empty tests, trivial assertions, and auto-enforce RED state",
-        state=TaskState.BACKLOG,
+        description="Detect empty tests, trivial assertions, cryptographic RED evidence, and TDD guard",
+        state=TaskState.IN_PROGRESS,
         dependencies=["DH-002"],
-        priority=2
+        priority=1
     )
     t4 = HierarchicalTask(
         id="DH-004",
         title="Agent Ecosystem & Specialized Roles Catalog",
         description="Implement specialized agent registry according to info.md Section 4",
         state=TaskState.BACKLOG,
-        dependencies=["DH-002"],
-        priority=3
+        dependencies=["DH-003"],
+        priority=2
     )
 
     for t in [t1, t2, t3, t4]:
@@ -127,11 +134,32 @@ def continue_work():
         border_style="green"
     ))
 
-# Alias command
 @app.command()
 def next():
     """Alias for continue."""
     continue_work()
+
+@tdd_app.command(name="audit-tests")
+def audit_tests(path: str = typer.Argument("tests", help="Directory or file path to audit")):
+    """Audit test suite to detect false or cosmetic tests."""
+    console.print(f"[cyan][*] Auditing test files in '{path}' for semantic quality...[/cyan]")
+    gate = TestQualityGate()
+    result = gate.audit_directory(path)
+
+    if result.passed:
+        console.print(Panel(
+            "[bold green]✔ Zero False Tests Detected![/bold green]\n"
+            "All test functions have verifiable assertions or exception expectations.",
+            title="TDD Quality Audit",
+            border_style="green"
+        ))
+    else:
+        console.print(Panel(
+            f"[bold red]✖ Test Quality Audit Failed![/bold red]\n{result.message}",
+            title="TDD Quality Audit Alert",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
 
 @app.command()
 def classify(prompt: str):
