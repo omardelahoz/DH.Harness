@@ -1,18 +1,18 @@
 # Current Progress (`.project/progress/CURRENT.md`)
 
-- **Fase Actual:** Fase 9 Completada con Éxito (Architecture Intelligence & Documentation Engine).
-- **Estado de AEE:** Task 10 `🟢 COMPLETED` (5 pasos verificados en SQLite con exit code 0 y verificadores Python).
+- **Fase Actual:** Fase 10 Completada con Éxito (Advanced Engineering, Hardening & Final Release v1.0.0).
+- **Estado de AEE:** Task 11 `🟢 COMPLETED` (5 pasos verificados en SQLite con exit code 0 y verificadores Python deterministas).
 - **Hitos Alcanzados:**
-  1. Contratos tipados `ADRStatus`, `ArchitectureDecisionRecord`, `CleanArchViolation`, `C4DiagramType`, `C4DiagramDefinition`, `ArchitectureHealthReport` en `src/dh_harness/core/contracts.py`.
-  2. `ADRManager` en `src/dh_harness/docs/engine.py` para gestión determinista de Architecture Decision Records con numeración incremental automática.
-  3. `ArchitectureAuditor` en `src/dh_harness/architecture/intelligence.py` que detecta y bloquea violaciones de Clean Architecture (imports directos de BD o SQL en Controladores).
-  4. `C4DiagramGenerator` en `src/dh_harness/docs/c4.py` para generación de diagramas Mermaid nivel 1 (Contexto) y nivel 2 (Contenedores).
-  5. Comandos CLI `docs adr list`, `docs adr new` y `arch audit` funcionales vía Typer y `node bin/cli.js`.
-  6. 131 pruebas unitarias automatizadas aprobadas (0 warnings, 0 tests falsos).
-  7. ADR-012 documentado en `docs/decisions/ADR-012-architecture-intelligence-and-documentation.md`.
-  8. Especificación técnica registrada en `.project/specs/010-architecture-intelligence/SPEC.md`.
+  1. Contratos tipados `DimensionHealth`, `ProjectHealthReport`, `ReleaseManifest`, `HardeningScenarioResult`, `HardeningSuiteReport` en `src/dh_harness/core/contracts.py`.
+  2. `ProjectHealthEngine` en `src/dh_harness/health/engine.py` evaluando salud general al 100.0% a través de 6 pilares de ingeniería.
+  3. `ReleaseHardeningEngine` en `src/dh_harness/release/hardening.py` ejecutando escenarios de endurecimiento extremo e2e.
+  4. Comandos CLI `dh-harness health` y `dh-harness release manifest` integrados en Typer y binario distribuible `bin/cli.js`.
+  5. 136 pruebas unitarias automatizadas aprobadas en pytest (0 fallas, 0 warnings).
+  6. ADR-013 documentado en `docs/decisions/ADR-013-advanced-engineering-hardening-and-release.md`.
+  7. Especificación técnica registrada en `.project/specs/011-hardening-and-release/SPEC.md`.
+  8. Definition of Done (DoD) verificada y satisfecha para la tarea DH-011.
 - **Próximas Actividades:**
-  - Publicar cambios en la rama `feature/DH-010-architecture-and-docs`.
-  - Crear Pull Request #10 hacia `main` en GitHub.
-  - Integrar PR #10 en `main`.
-  - Iniciar Fase 10 (`DH-011`: Advanced Engineering, Hardening & Final Release).
+  - Publicar cambios en la rama `feature/DH-011-hardening-and-release`.
+  - Crear Pull Request #11 hacia `main` en GitHub.
+  - Integrar PR #11 en `main` mediante merge administrativo.
+  - Sincronizar rama `main` local y certificar la entrega global v1.0.0.

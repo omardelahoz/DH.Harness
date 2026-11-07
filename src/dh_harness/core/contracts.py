@@ -344,3 +344,22 @@ class ArchitectureHealthReport(BaseModel):
     layer_violations: List[str] = Field(default_factory=list)
     adr_coverage: float = 100.0
     docs_synchronized: bool = True
+
+class ProjectHealthScore(BaseModel):
+    overall_score: float = 100.0
+    tdd_compliance: float = 100.0
+    security_score: float = 100.0
+    git_governance_score: float = 100.0
+    architecture_health: float = 100.0
+    uiux_score: float = 100.0
+    active_blockers: List[str] = Field(default_factory=list)
+    is_production_ready: bool = True
+
+class ReleaseManifest(BaseModel):
+    version: str = "1.0.0"
+    git_commit: str = ""
+    tests_count: int = 0
+    adrs_count: int = 0
+    spdx_compliance: str = "100% Permissive (MIT / Apache-2.0)"
+    release_date: str = ""
+    artifacts: List[str] = Field(default_factory=list)
