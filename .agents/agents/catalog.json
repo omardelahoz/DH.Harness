@@ -1,0 +1,83 @@
+{
+  "version": "1.0.0",
+  "agents": [
+    {
+      "id": "chief-orchestrator",
+      "name": "Chief Orchestrator Agent",
+      "role": "CHIEF_ORCHESTRATOR",
+      "description": "Coordina el flujo de trabajo global, clasifica solicitudes y delega en especialistas.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND", "GIT_OPERATIONS"],
+      "required_skills": ["orchestrator-continuity", "system-architecture-c4"],
+      "evaluation_criteria": [
+        "Clasificación exacta de interacciones",
+        "Resolución de dependencias sin ciclos en el DAG",
+        "Recomendaciones de continuidad justificadas"
+      ]
+    },
+    {
+      "id": "solution-architect",
+      "name": "Solution Architect Agent",
+      "role": "ARCHITECT",
+      "description": "Diseña modelos C4, gestiona decisiones técnicas (ADRs) y audita límites de capas.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE"],
+      "required_skills": ["system-architecture-c4", "clean-architecture-backend"],
+      "evaluation_criteria": [
+        "Diagramas Mermaid sintácticamente válidos",
+        "Documentación sistemática de ADRs",
+        "Cero violaciones de Clean Architecture"
+      ]
+    },
+    {
+      "id": "senior-backend-engineer",
+      "name": "Senior Backend Specialist",
+      "role": "DEVELOPER_BACKEND",
+      "description": "Implementa APIs robustas, repositorios desacoplados y servicios de aplicación.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["clean-architecture-backend", "database-migrations", "tdd-test-automation"],
+      "evaluation_criteria": [
+        "Thin controllers sin lógica de negocio ni SQL",
+        "Cumplimiento del ciclo TDD con evidencia RED",
+        "Cero datos quemados o simulados en código productivo"
+      ]
+    },
+    {
+      "id": "senior-frontend-engineer",
+      "name": "Senior Frontend Specialist",
+      "role": "DEVELOPER_FRONTEND",
+      "description": "Construye interfaces responsivas, accesibles y conectadas a APIs reales.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["modern-frontend-ui"],
+      "evaluation_criteria": [
+        "Cumplimiento WCAG 2.1 AA",
+        "Manejo de estados loading, empty y error",
+        "Consumo exclusivo de endpoints reales del backend"
+      ]
+    },
+    {
+      "id": "qa-engineer",
+      "name": "Senior QA Specialist",
+      "role": "QA_ENGINEER",
+      "description": "Diseña pruebas unitarias, audita calidad de tests y valida el ciclo TDD.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["tdd-test-automation", "quality-engineering"],
+      "evaluation_criteria": [
+        "Cero tests falsos o cosméticos",
+        "Aislamiento adecuado con mocks en pruebas unitarias",
+        "100% de tests pasando en pytest"
+      ]
+    },
+    {
+      "id": "security-auditor",
+      "name": "Security & License Auditor",
+      "role": "SECURITY_AUDITOR",
+      "description": "Inspecciona secretos, audita licencias de dependencias y previene código inseguro.",
+      "allowed_tools": ["READ_ONLY", "RUN_COMMAND"],
+      "required_skills": ["appsec-threat-modeling"],
+      "evaluation_criteria": [
+        "Cero secretos detectados por el AST scanner",
+        "100% licencias compatibles con SPDX Whitelist",
+        "Bloqueo estricto de SQL destructivo"
+      ]
+    }
+  ]
+}

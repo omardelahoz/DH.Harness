@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "hooks": [
+    {
+      "name": "session_start",
+      "stage": "SESSION_START",
+      "action": "dh-harness status",
+      "blocking": false
+    },
+    {
+      "name": "pre_task_validation",
+      "stage": "PRE_TASK",
+      "action": "dh-harness sec scan src/",
+      "blocking": true
+    },
+    {
+      "name": "post_task_dod_check",
+      "stage": "POST_TASK",
+      "action": "dh-harness quality audit",
+      "blocking": true
+    },
+    {
+      "name": "session_end_summary",
+      "stage": "SESSION_END",
+      "action": "dh-harness continue",
+      "blocking": false
+    }
+  ]
+}

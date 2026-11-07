@@ -8,7 +8,7 @@ def test_adr_manager_lists_existing_adrs():
 
     assert len(adrs) >= 11
     assert adrs[0].number == 1
-    assert "graviton" in adrs[0].title.lower()
+    assert "tdd" in adrs[0].title.lower()
     assert any(a.number == 11 for a in adrs)
 
 def test_adr_manager_calculates_next_number():

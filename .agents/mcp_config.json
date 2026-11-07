@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "mcpServers": {
+    "git": {
+      "command": "git",
+      "args": [],
+      "description": "Git repository operations and worktree management"
+    },
+    "sqlite": {
+      "command": "sqlite3",
+      "args": [".engine/agent_engine.db"],
+      "description": "Deterministic step verification database access"
+    }
+  }
+}

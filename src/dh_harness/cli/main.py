@@ -105,7 +105,7 @@ def _load_project_tasks() -> TaskManager:
         title="Foundation, SDK Validation & Dual Packaging",
         description="Bootstrap AEE, Antigravity SDK, and npm/python wrappers",
         state=TaskState.DONE,
-        evidence=["PR #1 merged into main with Graviton Task 1 COMPLETED"],
+        evidence=["PR #1 merged into main with Task 1 COMPLETED"],
         priority=1
     )
     t2 = HierarchicalTask(
@@ -113,7 +113,7 @@ def _load_project_tasks() -> TaskManager:
         title="Master Orchestrator, DAG & Project Continuity Engine",
         description="Implement DAG dependency graph, task state machine, and continuity engine",
         state=TaskState.DONE,
-        evidence=["PR #2 merged into main with Graviton Task 2 COMPLETED"],
+        evidence=["PR #2 merged into main with Task 2 COMPLETED"],
         dependencies=["DH-001"],
         priority=1
     )
@@ -122,7 +122,7 @@ def _load_project_tasks() -> TaskManager:
         title="Mandatory TDD Advanced Engine & False Test Detector",
         description="Detect empty tests, trivial assertions, cryptographic RED evidence, and TDD guard",
         state=TaskState.DONE,
-        evidence=["PR #3 merged into main with Graviton Task 3 COMPLETED"],
+        evidence=["PR #3 merged into main with Task 3 COMPLETED"],
         dependencies=["DH-002"],
         priority=1
     )
@@ -131,7 +131,7 @@ def _load_project_tasks() -> TaskManager:
         title="Agent Ecosystem & Specialized Roles Catalog",
         description="Implement specialized agent registry, delegation contracts, and independent review guard",
         state=TaskState.DONE,
-        evidence=["Graviton Task 4 COMPLETED (Agent Ecosystem, Delegation Engine, Independent Review Guard)"],
+        evidence=["Task 4 COMPLETED (Agent Ecosystem, Delegation Engine, Independent Review Guard)"],
         dependencies=["DH-003"],
         priority=1
     )
@@ -140,7 +140,7 @@ def _load_project_tasks() -> TaskManager:
         title="Memory Engine, Session Recovery & Context Preservation",
         description="Implement hierarchical memory, auto-recovery on restart, context truncation protection",
         state=TaskState.DONE,
-        evidence=["Graviton Task 5 COMPLETED (MultiLevelMemory, Checkpoints with SHA-256, Truncation Guard)"],
+        evidence=["Task 5 COMPLETED (MultiLevelMemory, Checkpoints with SHA-256, Truncation Guard)"],
         dependencies=["DH-004"],
         priority=1
     )
@@ -234,6 +234,97 @@ def _load_project_tasks() -> TaskManager:
     return mgr
 
 @app.command()
+def init(
+    workspace: str = typer.Option(".", help="Root directory of the workspace to initialize"),
+    force: bool = typer.Option(False, "--force", "-f", help="Force re-initialization of templates")
+):
+    """Bootstrap project workspace with .project/, .agents/, and verification engine."""
+    import shutil
+    from pathlib import Path
+
+    ws_path = Path(workspace).resolve()
+    console.print(f"[cyan][*] Initializing DH Engineering Harness in: {ws_path}[/cyan]")
+
+    # 1. Initialize .project/
+    proj_dir = ws_path / ".project"
+    for sub in ["rules", "specs", "tasks", "memory", "progress"]:
+        (proj_dir / sub).mkdir(parents=True, exist_ok=True)
+
+    status_file = proj_dir / "STATUS.md"
+    if not status_file.exists() or force:
+        status_file.write_text(
+            f"# Project Status\n\n- **Workspace:** {ws_path.name}\n- **Initialized:** True\n- **Status:** Ready\n",
+            encoding="utf-8"
+        )
+
+    # 2. Initialize .agents/ from harness bundled templates
+    harness_root = Path(__file__).resolve().parent.parent.parent.parent
+    bundled_agents = harness_root / ".agents"
+    target_agents = ws_path / ".agents"
+
+    if bundled_agents.exists() and bundled_agents != target_agents:
+        if not target_agents.exists() or force:
+            shutil.copytree(bundled_agents, target_agents, dirs_exist_ok=True)
+            console.print("[green][+] Seeded .agents/ with built-in skills, agents, and rules.[/green]")
+    else:
+        target_agents.mkdir(parents=True, exist_ok=True)
+        for sub in ["skills", "agents", "rules"]:
+            (target_agents / sub).mkdir(parents=True, exist_ok=True)
+
+    # 3. Seed AGENTS.md & GEMINI.md if missing
+    for doc_name in ["AGENTS.md", "GEMINI.md"]:
+        src_doc = harness_root / doc_name
+        dest_doc = ws_path / doc_name
+        if src_doc.exists() and src_doc != dest_doc and (not dest_doc.exists() or force):
+            shutil.copy(src_doc, dest_doc)
+            console.print(f"[green][+] Created {doc_name} from template.[/green]")
+
+    # 4. Initialize SQLite verification database in .engine/
+    engine_dir = ws_path / ".engine"
+    engine_dir.mkdir(parents=True, exist_ok=True)
+    db_file = engine_dir / "agent_engine.db"
+    if not db_file.exists():
+        import sqlite3
+        conn = sqlite3.connect(str(db_file))
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                description TEXT,
+                status TEXT DEFAULT 'PENDING',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS steps (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id INTEGER,
+                step_order INTEGER,
+                command TEXT,
+                verifier TEXT,
+                status TEXT DEFAULT 'PENDING',
+                run_at TIMESTAMP,
+                FOREIGN KEY (task_id) REFERENCES tasks(id)
+            )
+        """)
+        conn.commit()
+        conn.close()
+        console.print("[green][+] Initialized deterministic verification database in .engine/agent_engine.db[/green]")
+
+    console.print(Panel(
+        f"[bold green]✔ DH Engineering Harness Initialized Successfully![/bold green]\n\n"
+        f"Workspace: [cyan]{ws_path}[/cyan]\n"
+        f"Included Skills: [cyan]9 Built-in Engineering Skills in .agents/skills/[/cyan]\n"
+        f"Agents Catalog: [cyan]6 Specialized Roles in .agents/agents/[/cyan]\n"
+        f"Memory & Governance: [cyan].project/ and .engine/ ready[/cyan]\n\n"
+        f"[dim]Run 'dh-harness status' or 'dh-harness health' to inspect project state.[/dim]",
+        title="Bootstrap Complete",
+        border_style="green"
+    ))
+
+@app.command()
 def status():
     """Show project health, AEE tasks, and memory dashboard."""
     workspace = os.getcwd()
@@ -250,7 +341,7 @@ def status():
         expand=False
     ))
 
-    table = Table(title="Harness Health & Graviton AEE")
+    table = Table(title="Harness Health & Task Engine")
     table.add_column("Component", style="cyan", no_wrap=True)
     table.add_column("Status", style="magenta")
     table.add_column("Details", style="green")
@@ -259,7 +350,7 @@ def status():
     table.add_row("Antigravity SDK", sdk_status, sdk_info.get("package", ""))
     
     aee_status = f"[green]{summary['completed']} Completed[/green], [yellow]{summary['running']} Running[/yellow], [red]{summary['blocked']} Blocked[/red]"
-    table.add_row("Graviton AEE Engine", aee_status, f"Total Tasks: {summary['tasks_total']}")
+    table.add_row("Deterministic AEE Engine", aee_status, f"Total Tasks: {summary['tasks_total']}")
 
     mem_status = "[green]Active (.project/)[/green]" if summary["project_memory_exists"] else "[yellow]Missing[/yellow]"
     table.add_row("Persistent Memory", mem_status, "Rules, specs, and status tracking")
@@ -1015,7 +1106,7 @@ def health_check(
 
     pillars = [
         ("Security & Secrets (AST Scanner / SPDX Whitelist)", health.security_score),
-        ("TDD & Deterministic Graviton Engine (AEE)", health.tdd_compliance),
+        ("TDD & Deterministic Verification Engine (AEE)", health.tdd_compliance),
         ("Clean Architecture Layer Boundaries", health.architecture_health),
         ("Git & Repository Governance (DoD)", health.git_governance_score),
         ("UI/UX Engineering & WCAG 2.1 Accessibility", health.uiux_score),

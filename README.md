@@ -1,82 +1,184 @@
 # DH Engineering Harness for Google Antigravity
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](package.json)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green)](https://nodejs.org/)
-[![TDD](https://img.shields.io/badge/TDD-Mandatory%20(Graviton%20AEE)-brightgreen)](#graviton-tdd-methodology)
+[![Tests](https://img.shields.io/badge/tests-136%20passed-brightgreen)](tests/)
+[![Health Score](https://img.shields.io/badge/health-100.0%25%20EXCELLENT-brightgreen)](#project-health-dashboard)
+[![SPDX Compliance](https://img.shields.io/badge/SPDX%20Whitelist-100%25%20Permissive-blue)](#security--spdx-license-whitelist)
 
-**DH Engineering Harness** es una plataforma integral de ingeniería de software orientada a agentes para **Google Antigravity**. Proporciona gobernanza determinista, ciclo TDD estricto, orquestación de flujos de trabajo, clasificación inteligente de interacciones, memoria persistente multi-nivel (`.project/` y SQLite) y entrega disciplinada mediante Git/GitHub.
+**DH Engineering Harness** es una plataforma integral de ingeniería de software orientada a agentes para **Google Antigravity**. Proporciona gobernanza determinista de tareas, ciclo TDD estricto con verificación de evidencias criptográficas, orquestación de flujos de trabajo sobre grafos acíclicos dirigidos (DAG), memoria persistente multi-nivel, catálogo de skills y agentes preempaquetados de fábrica, y auditoría continua de Clean Architecture, seguridad y calidad.
 
 ---
 
-## Características Principales
+## Filosofía de Ingeniería
 
-1. **Gobernanza Determinista con Graviton TDD (AEE):**
-   - Ejecución de tareas con verificación SQLite de Zero-Trust.
-   - Bloqueo inmediato (`🔴 BLOCKED`) si un paso o prueba falla.
-   - Prohibido reportar trabajo sin pruebas verificadas (`🟢 COMPLETED`).
+> **"Mínimo proceso necesario, máximo rigor cuando se modifica software."**
 
-2. **Integración con el SDK Oficial de Antigravity:**
-   - Soporte nativo de `google.antigravity` (v0.1.23+).
-   - Aislamiento mediante patrón Adapter para ejecución segura en read-only y herramientas operativas.
-
-3. **Interaction & Task Classification Engine:**
-   - Clasificación determinista en 5 modos: `CONVERSATIONAL`, `INVESTIGATION`, `BUG_FIX`, `DEVELOPMENT`, `COMPLEX_ENGINEERING`.
-   - Aplica rigor proporcional: no inicia flujos pesados para preguntas conceptuales ni omite TDD en correcciones de código.
-
-4. **Empaquetado y Distribución Dual:**
-   - Instalable globalmente mediante npm: `npm install -g dh-harness` o ejecutable al vuelo con `npx dh-harness`.
-   - Disponible como paquete Python para integración en pipelines: `pip install -e .`.
-
-5. **Memoria Persistente de Proyecto (`.project/`):**
-   - Reglas permanentes (`rules/`), especificaciones funcionales (`specs/`), tareas (`tasks/`) y decisiones arquitectónicas (`decisions/`).
-   - Reanudación de sesiones sin pérdida de contexto.
+El arnés no burocratiza preguntas conceptuales ni omite controles en modificaciones de código productivo:
+1. **Calidad antes que velocidad aparente:** Cada paso debe superar una verificación determinista objetiva.
+2. **TDD obligatorio:** Prohibido modificar código en `src/` sin haber registrado previamente la falla en fase RED.
+3. **Evidencia antes que afirmaciones:** Ninguna tarea se marca como completada sin pruebas y Definition of Done (DoD) verificada.
+4. **Clean Architecture irrestricta:** Thin controllers, aislamiento de repositorios en Infraestructura y cero datos simulados o mocks en producción.
+5. **Seguridad desde el diseño:** Escaneo AST de secretos, bloqueo de SQL destructivo y dependencias 100% permisivas (SPDX Whitelist).
 
 ---
 
 ## Arquitectura del Sistema
 
+### 1. Diagrama de Contexto de Sistema (C1)
+
 ```mermaid
-graph TD
-    User([Developer / Agent]) -->|npx dh-harness / npm i -g| NPM_CLI[Node CLI Wrapper - bin/cli.js]
-    User -->|python -m dh_harness| PY_CLI[Python Typer CLI]
+flowchart TD
+    User["Developer / Agent"] -->|"npx dh-harness / npm CLI"| Launcher["Node.js Launcher (bin/cli.js)"]
+    User -->|"python -m dh_harness"| PyCLI["Python CLI Core"]
+    Launcher -->|"Spawns / Forwards"| PyCLI
+    PyCLI --> MasterOrch["DH Master Orchestrator"]
     
-    NPM_CLI -->|Spawns / Forwards| PY_CLI
-    
-    subgraph "DH Engineering Harness Core (src/dh_harness)"
-        PY_CLI --> Orchestrator[Master Orchestrator]
-        Orchestrator --> Classifier[Interaction Classifier<br/>Conversational / Investigation / Bugfix / Dev]
-        Orchestrator --> TDDEngine[TDD Engine<br/>RED -> GREEN -> REFACTOR -> VERIFY]
-        Orchestrator --> GovEngine[Governance & Quality Gates]
-        Orchestrator --> MemoryEngine[Memory Engine<br/>SQLite + .project/]
-        Orchestrator --> SDKAdapter[Antigravity SDK Adapter<br/>google-antigravity]
+    subgraph CoreEngines ["DH Engineering Harness Core"]
+        MasterOrch --> Classifier["Interaction Classifier"]
+        MasterOrch --> TDDEngine["Deterministic TDD Engine"]
+        MasterOrch --> Memory["Persistent Memory Engine"]
+        MasterOrch --> Security["Security & Secret Scanner"]
+        MasterOrch --> Quality["Quality Engine & WCAG"]
+        MasterOrch --> ArchAuditor["Clean Architecture Auditor"]
+        MasterOrch --> SkillsReg["Built-in Skills Registry"]
     end
     
-    subgraph "Graviton TDD Engine (.engine & .project)"
-        TDDEngine --> HarnessPy[.engine/harness.py]
-        HarnessPy --> Verifiers[.engine/verifiers.py]
-        HarnessPy --> AgentEngineDB[(.engine/agent_engine.db)]
-        MemoryEngine --> ProjectMemory[.project/<br/>rules/ | specs/ | tasks/ | decisions/]
+    subgraph RuntimeEnvironment ["Runtime & External Systems"]
+        PyCLI --> SDK["Antigravity SDK (google.antigravity)"]
+        TDDEngine --> SQLiteDB[("Deterministic Verification DB (.engine)")]
+        Memory --> ProjMemory[".project/ (Rules, Specs, Tasks)"]
+        MasterOrch --> GitRepo[("Git / GitHub Repository")]
     end
+```
+
+### 2. Ciclo de Ejecución Determinista TDD (C3)
+
+```mermaid
+flowchart LR
+    A["1. Solicitud de Usuario"] --> B["2. Clasificador de Interacción"]
+    B --> C{"¿Requiere TDD?"}
+    C -->|"No"| D["Modo Conversacional / Investigación"]
+    C -->|"Sí"| E["3. Fase RED: Reproducir con Test"]
+    E --> F["4. Bóveda SHA-256 de Evidencia"]
+    F --> G["5. Guardia de Código: Desbloquea src/"]
+    G --> H["6. Fase GREEN: Solución Quirúrgica"]
+    H --> I["7. Verificación & Auditoría AST"]
+    I --> J["8. Definition of Done & PR en GitHub"]
 ```
 
 ---
 
-## Instalación y Requisitos
+## Características Principales y Motores Integrados
+
+El harness incorpora 11 motores especializados coordinados por el **Master Orchestrator**:
+
+1. **Interaction & Task Classification Engine (`src/dh_harness/interaction/`):**
+   - Clasifica solicitudes en 5 modos canónicos: `CONVERSATIONAL`, `INVESTIGATION`, `BUG_FIX`, `DEVELOPMENT`, `COMPLEX_ENGINEERING`.
+   - Modula el rigor automáticamente: no inicia ceremonias pesadas para preguntas teóricas y activa TDD estricto para código.
+
+2. **Deterministic TDD Engine (`src/dh_harness/tdd/`):**
+   - **Bóveda de Evidencia RED (`RedEvidenceVault`):** Registra el hash SHA-256 de la ejecución fallida de la prueba antes de permitir cambios en código.
+   - **Guardia de Modificación (`CodeModificationGuard`):** Bloquea cualquier edición en `src/` si no existe evidencia previa de prueba en rojo.
+   - **Detector de Pruebas Falsas (`FalseTestDetector`):** Analiza el árbol sintáctico (AST) para erradicar tests cosméticos (tests vacíos, sin aserciones o con `assert True`).
+
+3. **Master Orchestrator, DAG & Continuity (`src/dh_harness/orchestrator/`, `tasks/`, `continuity/`):**
+   - Organiza tareas en un grafo acíclico dirigido (DAG) con ordenamiento topológico y detección de ciclos.
+   - Responde dinámicamente a la pregunta: *"¿Con qué continuamos hoy?"* recomendando la siguiente tarea desbloqueada (`dh-harness continue`).
+
+4. **Hierarchical Persistent Memory Engine (`src/dh_harness/memory/`):**
+   - Gestión de memoria en 4 niveles: L1 (Scratchpad de sesión), L2 (Memoria de proyecto `.project/`), L3 (Memoria de tarea activa), L4 (Conocimiento a largo plazo en SQLite).
+   - Checkpoints con checksum SHA-256 y Truncation Guard con digest compacto para prevenir desbordamientos de contexto.
+
+5. **Clean Architecture & Layer Boundary Auditor (`src/dh_harness/architecture/`):**
+   - Audita estáticamente el código fuente para impedir el bypass de capas:
+     - Detecta e intercepta accesos o importaciones directas de bases de datos (`DbContext`, `dapper`, `sqlite3`) dentro de controladores (`DIRECT_DB_ACCESS_IN_CONTROLLER`).
+     - Detecta consultas SQL embebidas en controladores (`SQL_IN_CONTROLLER`).
+
+6. **Security & Secrets Engine (`src/dh_harness/security/`):**
+   - Escáner AST de secretos que detecta tokens de GitHub, llaves de AWS, private keys o passwords en connection strings.
+   - Auditor de licencias de dependencias según lista blanca SPDX (100% permisivas: `MIT`, `Apache-2.0`, `BSD`, `ISC`).
+   - Guardia contra sentencias SQL destructivas (`DROP`, `TRUNCATE`, `DELETE` sin `WHERE`).
+
+7. **Quality Engine & WCAG 2.1 AA Accessibility (`src/dh_harness/quality/`, `uiux/`):**
+   - Quality gates que consolidan pruebas unitarias, auditoría AST y validación de entregables.
+   - Auditor de accesibilidad web que evalúa contraste de color (ratio mínimo 4.5:1), etiquetas ARIA y estados de carga (`loading`, `empty`, `error`).
+   - Aislamiento estricto de revisión: el agente desarrollador nunca puede auto-aprobar su código (`SelfReviewViolationError`).
+
+8. **Architecture Decision Records (ADRs) & C4 Generator (`src/dh_harness/docs/`):**
+   - Descubrimiento, numeración incremental automática y validación estructural de ADRs en `docs/decisions/`.
+   - Generación de diagramas C4 (Contexto C1 y Contenedores C2) en Mermaid nativo.
+
+9. **Git & Repository Governance (`src/dh_harness/git/`):**
+   - Validación de Conventional Commits (`feat(...)`, `fix(...)`).
+   - Verificación de Definition of Done (DoD) con recolección de evidencias antes de cerrar tareas.
+   - Soporte para ejecución concurrente mediante Git Worktrees aislados.
+
+10. **Lifecycle Hooks Engine (`src/dh_harness/hooks/`):**
+    - Puntos de intercepción configurables en `.agents/hooks.json` para eventos: `SESSION_START`, `PRE_TASK`, `POST_TASK` y `SESSION_END`.
+
+11. **Project Health Engine (`src/dh_harness/health/`):**
+    - Diagnóstico multidimensional ponderado (0.0% a 100.0%) en 6 pilares de ingeniería, certificando preparación para producción.
+
+---
+
+## Ecosistema Preempaquetado: Skills y Agentes de Fábrica
+
+El harness incluye de fábrica en la carpeta `.agents/` los 9 skills de ingeniería y el catálogo de agentes especializados. **No requieren instalación por separado ni descargas adicionales:**
+
+### Catálogo de Skills Incorporados (`.agents/skills/`)
+
+| Skill ID | Especialidad | Triggers | Reglas Clave |
+| :--- | :--- | :--- | :--- |
+| **`clean-architecture-backend`** | Backend & APIs | `backend`, `api`, `clean-architecture`, `repository` | Thin controllers, repositorios en Infraestructura, cero datos falsos. |
+| **`database-migrations`** | Datos & SQL | `database`, `sql`, `migration`, `dapper`, `ef-core` | Migraciones idempotentes y transaccionales, queries parametrizadas, seed data real. |
+| **`modern-frontend-ui`** | Frontend & UI/UX | `frontend`, `ui`, `react`, `angular`, `wcag`, `a11y` | Accesibilidad WCAG 2.1 AA, estados loading/error, consumo de APIs reales. |
+| **`system-architecture-c4`** | Arquitectura & C4 | `architecture`, `c4`, `adr`, `system-design` | Diagramas Mermaid Contexto y Contenedor, gestión estandarizada de ADRs. |
+| **`appsec-threat-modeling`** | Seguridad & AppSec | `security`, `threat-modeling`, `owasp`, `secret`, `spdx` | Escáner AST de secretos, lista blanca SPDX, bloqueo de SQL destructivo. |
+| **`tdd-test-automation`** | TDD & Testing | `tdd`, `test`, `pytest`, `unit-test`, `red-green` | Falla previa RED en bóveda SHA-256, cero tests cosméticos o tautológicos. |
+| **`git-governance`** | Git & DoD | `git`, `branch`, `commit`, `dod`, `worktree` | Ramas `feature/*`, Conventional Commits, verificación de DoD con evidencias. |
+| **`quality-engineering`** | Calidad & Gates | `quality`, `qa`, `code-review`, `gate` | Revisión independiente obligatoria (anti-self-review), quality gates. |
+| **`orchestrator-continuity`** | Orquestación & DAG | `orchestrator`, `classify`, `continue`, `dag` | Clasificación en 5 modos, resolución DAG, "¿Con qué continuamos?". |
+
+### Catálogo de Agentes Especializados (`.agents/agents/catalog.json`)
+
+- **`chief-orchestrator`:** Coordinador general, clasificador de intenciones y despachador de tareas.
+- **`solution-architect`:** Diseñador de arquitectura C4, auditor de límites de capas y redactor de ADRs.
+- **`senior-backend-engineer`:** Especialista en Clean Architecture, APIs tipadas y persistencia con Dapper/EF Core.
+- **`senior-frontend-engineer`:** Diseñador de interfaces responsivas y accesibles bajo WCAG 2.1 AA.
+- **`qa-engineer`:** Diseñador de pruebas unitarias y auditor de tests falsos.
+- **`security-auditor`:** Auditor de secretos, licencias de código abierto y prevención de vulnerabilidades.
+
+---
+
+## Instalación y Arranque Rápido
 
 ### Requisitos Previos
 - **Node.js:** `>= 18.0.0`
 - **Python:** `>= 3.10`
 - **Git**
 
-### Opción A: Instalación vía npm (Recomendada)
+### Opción A: Ejecución Directa con `npx` (Sin instalación global)
 ```bash
-npm install -g dh-harness
-# O ejecutar directamente sin instalación global:
-npx dh-harness --help
+# Diagnóstico de salud del proyecto
+npx dh-harness health
+
+# Consultar continuidad ("¿Con qué continuamos?")
+npx dh-harness continue
+
+# Ver catálogo de skills incorporados
+npx dh-harness skills list
 ```
 
-### Opción B: Instalación en Entorno Python
+### Opción B: Instalación Global vía npm
+```bash
+npm install -g dh-harness
+dh-harness --help
+```
+
+### Opción C: Instalación en Entorno Python
 ```bash
 git clone https://github.com/omardelahoz/DH.Harness.git
 cd DH.Harness
@@ -85,44 +187,46 @@ python -m venv .venv
 pip install -e ".[dev]"
 ```
 
+### Inicialización de un Proyecto Nuevo o Existente
+Para preparar cualquier proyecto de software con la estructura de gobierno, memoria y skills preempaquetados:
+```bash
+dh-harness init
+```
+Este comando siembra automáticamente:
+- La carpeta `.project/` (rules, specs, tasks, memory, status).
+- La carpeta `.agents/` con los 9 skills oficiales, catálogo de agentes y reglas de ingeniería.
+- La base de datos SQLite para verificación determinista de tareas.
+- Las guías maestras de operación `AGENTS.md` y `GEMINI.md`.
+
 ---
 
-## Guía Rápida de Uso
+## Manual de Referencia de la CLI
 
-### 1. Consultar Estado del Proyecto
-```bash
-dh-harness status
-# o con npx:
-npx dh-harness status
-```
+```text
+CORE COMMANDS:
+  health                     Diagnóstico holístico de 6 pilares de salud del proyecto (100% GA score)
+  status                     Muestra el estado del proyecto, tareas activas y memoria
+  continue, next             Diagnostica continuidad y recomienda la siguiente tarea ("¿Con qué continuamos?")
+  init [--force]             Inicializa el workspace con .project/, .agents/ y la base de verificación
+  classify "<prompt>"        Clasifica una solicitud en uno de los 5 modos de interacción
+  check                      Ejecuta suite de quality gates y pruebas unitarias
 
-### 2. Clasificar una Solicitud
-```bash
-dh-harness classify "Corrige el fallo de autenticación cuando el token expira"
-# Salida: Modo BUG_FIX, TDD Requerido: SÍ
-```
-
-### 3. Ejecutar Controles de Calidad
-```bash
-dh-harness check
-```
-
-### 4. Ciclo Graviton TDD (AEE)
-```bash
-# Inicializar motor de base de datos
-python .engine/harness.py init
-
-# Registrar una nueva tarea
-python .engine/harness.py start-task "Título de la Tarea" "Descripción y objetivos"
-
-# Agregar paso con verificador
-python .engine/harness.py add-step 1 1 "pytest tests/unit/" "check_python_syntax('archivo.py')"
-
-# Ejecutar paso
-python .engine/harness.py run-next 1
-
-# Ver dashboard de verificación
-python .engine/harness.py status 1
+ENGINEERING SUITES:
+  skills list                Muestra la tabla de los 9 skills de ingeniería incorporados
+  skills show <id>           Muestra la especificación completa, triggers y reglas de un skill
+  skills match "<prompt>"    Determina dinámicamente qué skills aplican a una tarea según triggers
+  agents list                Lista los agentes especializados y sus herramientas permitidas
+  agents show <id>           Muestra permisos, habilidades requeridas y criterios de evaluación de un agente
+  tdd audit-tests [path]     Audita la suite de pruebas para detectar tests falsos o cosméticos
+  git check-dod <task_id>    Verifica los criterios de Definition of Done para una tarea
+  git validate-commit "<msg>" Valida sintaxis Conventional Commits
+  sec scan [path]            Escanea el código fuente en busca de secretos y credenciales expuestas
+  sec licenses [dir]         Audita licencias de dependencias contra la lista blanca SPDX
+  quality audit              Ejecuta auditoría multidimensional de calidad
+  docs adr list              Lista todas las decisiones arquitectónicas registradas (ADRs)
+  docs adr new "<title>"     Crea un nuevo ADR estandarizado con numeración incremental automática
+  arch audit [src_dir]       Audita estáticamente que no exista bypass de capas en Clean Architecture
+  release manifest           Genera el manifiesto formal de certificación de release v1.0.0
 ```
 
 ---
@@ -132,29 +236,59 @@ python .engine/harness.py status 1
 ```text
 DH.Harness/
 ├── bin/
-│   └── cli.js                     # Wrapper ejecutable Node.js
-├── .engine/
-│   ├── harness.py                 # Motor de ejecución y pasos Graviton
-│   ├── verifiers.py               # Biblioteca de verificadores deterministas
-│   └── agent_engine.db            # Base de datos SQLite operativa
+│   └── cli.js                     # Wrapper ejecutable Node.js (npx / npm)
+├── AGENTS.md                      # Manual maestro de operación para agentes de IA
+├── GEMINI.md                      # Directrices de contexto para Google Antigravity / Gemini
+├── .env.example                   # Plantilla de variables de entorno
+├── .agents/                       # Ecosistema preempaquetado de fábrica
+│   ├── rules/
+│   │   └── engineering-standards.md
+│   ├── agents/
+│   │   └── catalog.json
+│   ├── skills/                    # 9 Skills oficiales con especificación SKILL.md
+│   │   ├── clean-architecture-backend/
+│   │   ├── database-migrations/
+│   │   ├── modern-frontend-ui/
+│   │   ├── system-architecture-c4/
+│   │   ├── appsec-threat-modeling/
+│   │   ├── tdd-test-automation/
+│   │   ├── git-governance/
+│   │   ├── quality-engineering/
+│   │   └── orchestrator-continuity/
+│   ├── hooks.json                 # Configuración de lifecycle hooks
+│   └── mcp_config.json            # Configuración de servidores MCP
 ├── .project/                      # Memoria persistente del proyecto
-│   ├── AGENT.md                   # Manual operativo de agentes
 │   ├── STATUS.md                  # Dashboard de estado
-│   ├── rules/                     # Reglas globales y de desarrollo
+│   ├── rules/                     # Reglas de desarrollo
 │   ├── specs/                     # Especificaciones funcionales
-│   └── progress/                  # Registro de avance
+│   └── memory/                    # Base de datos SQLite y checkpoints de sesión
 ├── src/
-│   └── dh_harness/
-│       ├── core/                  # Contratos y modelos de datos
-│       ├── sdk/                   # Adaptador del SDK google.antigravity
-│       ├── interaction/           # Clasificador de solicitudes
-│       ├── tdd/                   # Motor de control de fases TDD
-│       ├── memory/                # Motor de memoria y persistencia
-│       └── cli/                   # Interfaz CLI Typer/Rich
-├── tests/                         # Suites de pruebas automáticas
-├── docs/                          # Arquitectura, ADRs y guías
-├── pyproject.toml                 # Configuración de empaquetado Python
-└── package.json                   # Configuración de empaquetado npm
+│   └── dh_harness/                # Núcleo de la plataforma (11 motores de ingeniería)
+│       ├── core/                  # Contratos Pydantic y modelos tipados
+│       ├── sdk/                   # Adaptador del SDK oficial google.antigravity
+│       ├── interaction/           # Clasificador de 5 modos de interacción
+│       ├── orchestrator/          # Orquestador maestro de flujos
+│       ├── tasks/                 # Grafo DAG y máquina de estados de tareas
+│       ├── continuity/            # Motor de continuidad ("¿Con qué continuamos?")
+│       ├── tdd/                   # Bóveda RED SHA-256, guardia de código y detector AST
+│       ├── memory/                # Memoria multi-nivel L1-L4 y Truncation Guard
+│       ├── skills/                # Registro y catálogo de skills
+│       ├── agents/                # Catálogo de agentes y motor de delegación
+│       ├── workflows/             # Workflows ejecutables y runner
+│       ├── git/                   # Gobernanza de ramas, commits y worktrees
+│       ├── security/              # Escáner AST de secretos y lista blanca SPDX
+│       ├── quality/               # Quality gates y auditoría de calidad
+│       ├── uiux/                  # Auditor de accesibilidad WCAG 2.1 AA
+│       ├── architecture/          # Auditor estático de límites Clean Architecture
+│       ├── docs/                  # Gestor de ADRs y generador C4 Mermaid
+│       ├── hooks/                 # Motor de lifecycle hooks
+│       ├── health/                # Motor de diagnóstico holístico de salud
+│       ├── release/               # Endurecimiento e2e y manifiesto de release
+│       └── cli/                   # Interfaz Typer/Rich
+├── tests/                         # Suite completa de pruebas automatizadas (136 tests)
+├── docs/decisions/                # 13 Architecture Decision Records (ADR-001 a ADR-013)
+├── pyproject.toml                 # Empaquetado Python (Hatchling)
+└── package.json                   # Empaquetado npm
 ```
 
 ---
