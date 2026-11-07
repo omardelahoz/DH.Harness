@@ -20,7 +20,7 @@ def test_truncation_guard_generates_compact_digest(tmp_path):
     mem.store(
         level=MemoryLevel.PROJECT,
         key="tech_stack",
-        content="Python 3.12, Clean Architecture, Graviton TDD"
+        content="Python 3.12, Clean Architecture, Deterministic TDD"
     )
 
     checkpoint = SessionCheckpoint(

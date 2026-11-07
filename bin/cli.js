@@ -9,7 +9,7 @@ const path = require('path');
 const fs = require('fs');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..');
-const VERSION = '0.1.0';
+const VERSION = '1.0.0';
 
 function findPython() {
   const isWin = process.platform === 'win32';
@@ -38,20 +38,31 @@ function findPython() {
 function printHelp() {
   console.log(`
 \x1b[1m\x1b[36mDH Engineering Harness for Google Antigravity\x1b[0m (v${VERSION})
-Agentic Software Engineering, TDD & Workflow Governance
+Agentic Software Engineering, Deterministic TDD & Workflow Governance
 
 \x1b[1mUSAGE:\x1b[0m
   npx dh-harness <command> [options]
   dh-harness <command> [options]
 
 \x1b[1mCORE COMMANDS:\x1b[0m
-  \x1b[32mstatus\x1b[0m                  Show project health, AEE tasks, and memory dashboard
+  \x1b[32mhealth\x1b[0m                  Holistic 6-pillar project health diagnostic (100% GA score)
+  \x1b[32mstatus\x1b[0m                  Show project status, active tasks, and memory dashboard
   \x1b[32mcontinue, next\x1b[0m          Diagnose continuity and recommend next task (¿Con qué continuamos?)
-  \x1b[32minit\x1b[0m                    Initialize harness workspace and Graviton AEE engine
+  \x1b[32minit\x1b[0m                    Bootstrap project workspace (.project/, .agents/, and verification db)
   \x1b[32mclassify <prompt>\x1b[0m       Classify interaction mode (Conversational, BugFix, Dev, etc.)
-  \x1b[32mtdd <subcommand>\x1b[0m        TDD engine commands (red, green, verify, status)
-  \x1b[32mtask <subcommand>\x1b[0m       Graviton AEE task management (start, step, run, status)
   \x1b[32mcheck\x1b[0m                   Run quality gates, verification tests, and audits
+
+\x1b[1mENGINEERING SUITES:\x1b[0m
+  \x1b[32mskills <list|show|match>\x1b[0m   Built-in engineering skills catalog and dynamic matching
+  \x1b[32magents <list|show>\x1b[0m         Specialized agents catalog, contracts, and role boundaries
+  \x1b[32mtdd <audit-tests>\x1b[0m          Deterministic TDD engine and AST false test detector
+  \x1b[32mtask <start|step|run|status>\x1b[0m Step-by-step task execution and verification engine
+  \x1b[32mgit <check-dod|validate-commit>\x1b[0m Git governance, conventional commits, and DoD audit
+  \x1b[32msec <scan|licenses>\x1b[0m        AST secret scanner and SPDX permissive license whitelist
+  \x1b[32mquality <audit>\x1b[0m            Quality engine, gates, and independent review enforcement
+  \x1b[32mdocs <adr list|adr new>\x1b[0m    Architecture Decision Records (ADRs) automation
+  \x1b[32march <audit>\x1b[0m               Clean Architecture layer boundaries static auditor
+  \x1b[32mrelease <manifest>\x1b[0m         Build and inspect formal release manifest
 
 \x1b[1mOPTIONS:\x1b[0m
   --help, -h             Show this help message
