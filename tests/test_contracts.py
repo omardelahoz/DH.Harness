@@ -3,9 +3,11 @@ from dh_harness.core.contracts import (
     InteractionMode,
     TDDPhase,
     TaskState,
-    TaskDefinition,
-    TaskStep,
-    QualityGateResult,
+    AgentRole,
+    ToolPermission,
+    AgentDefinition,
+    AgentTaskContract,
+    AgentExecutionResult,
     HierarchicalTask,
     ContinuityReport,
 )
@@ -50,27 +52,62 @@ def test_task_states_full_lifecycle():
     assert len(states) == 11
     assert TaskState.DONE.value == "DONE"
 
-def test_hierarchical_task():
-    task = HierarchicalTask(
-        id="DH-101",
-        title="Implement Auth Flow",
-        description="OAuth2/OIDC integration",
-        state=TaskState.BACKLOG,
-        dependencies=["DH-100"]
-    )
-    assert task.id == "DH-101"
-    assert task.state == TaskState.BACKLOG
-    assert "DH-100" in task.dependencies
+def test_agent_roles_and_permissions():
+    roles = [
+        AgentRole.ORCHESTRATOR,
+        AgentRole.SOLUTION_ARCHITECT,
+        AgentRole.BACKEND_DEVELOPER,
+        AgentRole.FRONTEND_DEVELOPER,
+        AgentRole.DATABASE_ENGINEER,
+        AgentRole.SECURITY_ENGINEER,
+        AgentRole.CODE_REVIEWER,
+        AgentRole.QA_ENGINEER,
+        AgentRole.TECHNICAL_WRITER,
+    ]
+    assert len(roles) == 9
 
-def test_continuity_report():
-    report = ContinuityReport(
-        completed_count=3,
-        in_progress_count=1,
-        pending_count=4,
-        blocked_count=0,
-        parallel_candidates=["DH-102", "DH-103"],
-        recommended_task="DH-102",
-        rationale="All preconditions met and high priority."
+    permissions = [
+        ToolPermission.READ_ONLY,
+        ToolPermission.FILE_WRITE,
+        ToolPermission.RUN_COMMAND,
+        ToolPermission.TERMINAL_SANDBOX,
+        ToolPermission.GIT_OPERATIONS,
+        ToolPermission.MCP_TOOLS,
+    ]
+    assert len(permissions) == 6
+
+def test_agent_definition():
+    agent = AgentDefinition(
+        id="backend-expert",
+        name="Backend Specialist",
+        role=AgentRole.BACKEND_DEVELOPER,
+        description="Senior backend engineer specializing in Clean Architecture and TDD",
+        allowed_tools=[ToolPermission.FILE_WRITE, ToolPermission.RUN_COMMAND],
+        required_skills=["csharp", "python", "sql"],
+        evaluation_criteria=["TDD pass", "Clean code", "Zero fake data"]
     )
-    assert report.recommended_task == "DH-102"
-    assert len(report.parallel_candidates) == 2
+    assert agent.id == "backend-expert"
+    assert ToolPermission.FILE_WRITE in agent.allowed_tools
+
+def test_agent_task_contract_and_result():
+    contract = AgentTaskContract(
+        task_id="TASK-42",
+        agent_id="backend-expert",
+        objective="Implement repository query",
+        input_artifacts=["specs/001/SPEC.md"],
+        expected_outputs=["src/repository.py", "tests/test_repository.py"]
+    )
+    assert contract.task_id == "TASK-42"
+    assert len(contract.expected_outputs) == 2
+
+    result = AgentExecutionResult(
+        task_id="TASK-42",
+        agent_id="backend-expert",
+        status="COMPLETED",
+        changes_made=["src/repository.py"],
+        tests_run=["tests/test_repository.py"],
+        evidence=["Exit code 0, 5 tests passed"],
+        output_artifacts=["src/repository.py"]
+    )
+    assert result.status == "COMPLETED"
+    assert len(result.changes_made) == 1

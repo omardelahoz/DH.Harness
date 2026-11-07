@@ -1,9 +1,9 @@
 # Project Status Dashboard (`.project/STATUS.md`)
 
 - **Proyecto:** DH Engineering Harness for Antigravity
-- **Versión:** 0.3.0-alpha
-- **Estado Actual:** Fase 2 Completed (Mandatory TDD Advanced Engine & False Test Detector Operational)
-- **Rama Activa:** `feature/DH-003-advanced-tdd-engine`
+- **Versión:** 0.4.0-alpha
+- **Estado Actual:** Fase 3 Completed (Agent Ecosystem, Specialized Roles & Delegation Engine Operational)
+- **Rama Activa:** `feature/DH-004-agent-ecosystem`
 - **Repositorio Remoto:** https://github.com/omardelahoz/DH.Harness (Público, Rama `main` protegida)
 
 ---
@@ -12,24 +12,25 @@
 
 | Indicador | Valor |
 | :--- | :--- |
-| **Tareas Totales AEE** | 3 |
-| **Tareas Completadas** | 3 (Task 1: Foundation, Task 2: Orchestrator, Task 3: Advanced TDD) |
+| **Tareas Totales AEE** | 4 |
+| **Tareas Completadas** | 4 (Task 1: Foundation, Task 2: Orchestrator, Task 3: Advanced TDD, Task 4: Agent Ecosystem) |
 | **Tareas En Progreso** | 0 |
 | **Tareas Bloqueadas** | 0 |
-| **Pasos AEE Verificados** | 16 de 16 (100% PASS) |
-| **Pruebas Automatizadas** | 47 tests pasando en pytest (0 warnings) |
+| **Pasos AEE Verificados** | 21 de 21 (100% PASS) |
+| **Pruebas Automatizadas** | 60 tests pasando en pytest (0 warnings) |
 | **Tests Falsos Detectados** | 0 (Certificado por `FalseTestDetector`) |
 | **Licencias Auditadas** | 100% Permisivas (Apache-2.0 / MIT) |
 | **Antigravity SDK** | Instalado y verificado (v0.1.23) |
-| **TDD Audit Command** | Operativo (`dh-harness tdd audit-tests tests/`) |
+| **Agent Ecosystem CLI** | Operativo (`node bin/cli.js agents list` / `agents show <id>`) |
 
 ---
 
 ## Registro de Actividades Recientes
 
-1. Implementado `FalseTestDetector` con análisis sintáctico AST de Python (`src/dh_harness/tdd/detector.py`).
-2. Implementado `TDDEvidenceVault` con hashing SHA-256 para validación de fallos RED legítimos (`src/dh_harness/tdd/evidence.py`).
-3. Implementado `CodeModificationGuard` que bloquea modificaciones en `src/` sin prueba fallida activa (`src/dh_harness/tdd/guard.py`).
-4. Implementado `SecretScanningGate` y `TestQualityGate` en compuertas de gobernanza (`src/dh_harness/governance/gates.py`).
-5. Añadido comando CLI `dh-harness tdd audit-tests` para auditoría semántica de suites de prueba.
-6. Tarea 3 verificada al 100% en SQLite mediante Graviton AEE (`🟢 COMPLETED`).
+1. Actualizados contratos base en `dh_harness.core.contracts` con `AgentRole`, `ToolPermission`, `AgentDefinition`, `AgentTaskContract`.
+2. Implementado catálogo canónico de agentes de ingeniería en `src/dh_harness/agents/catalog.py` (8 roles especializados).
+3. Implementado `AgentRegistry` en `src/dh_harness/agents/registry.py` con filtros por rol y herramientas.
+4. Implementado `DelegationEngine` en `src/dh_harness/agents/delegation.py` con bloqueo estricto de auto-reviews (`SelfReviewViolationError`) y roles no autorizados (`UnauthorizedReviewerError`).
+5. Implementado spawning con menor privilegio en `src/dh_harness/sdk/adapter.py` hacia `google.antigravity.LocalAgentConfig` y `CapabilitiesConfig`.
+6. Añadido comando CLI `agents list` y `agents show <id>` en Typer y binario de Node `bin/cli.js`.
+7. Tarea 4 verificada al 100% en SQLite mediante Graviton AEE (`🟢 COMPLETED`).
