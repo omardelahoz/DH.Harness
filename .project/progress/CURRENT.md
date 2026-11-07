@@ -1,18 +1,19 @@
 # Current Progress (`.project/progress/CURRENT.md`)
 
-- **Fase Actual:** Fase 5 Completada con Éxito (Skills Registry & Composable Workflow Engine).
-- **Estado de AEE:** Task 6 `🟢 COMPLETED` (5 pasos verificados en SQLite con exit code 0 y verificadores Python).
+- **Fase Actual:** Fase 6 Completada con Éxito (Git & Repository Governance & Delivery).
+- **Estado de AEE:** Task 7 `🟢 COMPLETED` (5 pasos verificados en SQLite con exit code 0 y verificadores Python).
 - **Hitos Alcanzados:**
-  1. Contratos core `SkillCategory`, `SkillDefinition`, `WorkflowStage`, `WorkflowDefinition`, `WorkflowExecutionResult` integrados en `src/dh_harness/core/contracts.py`.
-  2. Catálogo canónico con 6 habilidades de ingeniería en `src/dh_harness/skills/catalog.py`.
-  3. `SkillsRegistry` operativo en `src/dh_harness/skills/registry.py` con resolución dinámica por intenciones (`match_skills_for_task`), triggers y anti-triggers.
-  4. Catálogo de workflows estándar en `src/dh_harness/workflows/catalog.py` (Feature Development, BugFix, Security Audit, API Development).
-  5. `WorkflowRunner` ejecutable en `src/dh_harness/workflows/runner.py` con verificación estricta de dependencias y garantía de revisión independiente.
-  6. Comandos CLI `skills list`, `show`, `match` y `workflows list`, `describe` integrados y probados vía `node bin/cli.js`.
-  7. 78 pruebas unitarias automatizadas aprobadas (0 warnings, 0 tests falsos).
-  8. ADR-008 documentado en `docs/decisions/ADR-008-skills-registry-and-composable-workflows.md`.
-  9. Especificación técnica registrada en `.project/specs/006-skills-and-workflows/SPEC.md`.
+  1. Contratos core `GitProvider`, `RepoDiagnostics`, `DoDVerificationResult` agregados en `src/dh_harness/core/contracts.py`.
+  2. Diagnóstico determinista de repositorio en `src/dh_harness/git/manager.py` (detección de proveedores GitHub, Azure DevOps, GitLab, Bitbucket y Local).
+  3. Guarda estricta de ramas protegidas (`main`, `master`, `release`, `production`) y validador de nomenclatura de ramas (`feature/`, `bugfix/`, etc.).
+  4. Validador estricto de Conventional Commits (`feat:`, `fix:`, `refactor:`, etc.).
+  5. Verificador de Definition of Done (DoD) que bloquea el cierre de tareas sin evidencia verificada de tests, revisión independiente y Pull Request.
+  6. Gestor de `git worktree` en `src/dh_harness/git/worktrees.py` para ejecución aislada y sin colisiones en workflows concurrentes.
+  7. Comandos CLI `git status`, `validate-branch`, `validate-commit`, `check-dod` integrados y probados vía `node bin/cli.js`.
+  8. 91 pruebas unitarias automatizadas aprobadas (0 warnings, 0 tests falsos).
+  9. ADR-009 documentado en `docs/decisions/ADR-009-git-repository-governance.md`.
+  10. Especificación técnica registrada en `.project/specs/007-git-governance/SPEC.md`.
 - **Próximas Actividades:**
-  - Publicar cambios en la rama `feature/DH-006-skills-and-workflows`.
-  - Crear Pull Request #6 hacia `main` en GitHub.
-  - Iniciar Fase 6 (`DH-007`: Git Governance, Branch Policies & PR Delivery).
+  - Publicar cambios en la rama `feature/DH-007-git-governance`.
+  - Crear Pull Request #7 hacia `main` en GitHub.
+  - Iniciar Fase 7 (`DH-008`: Security & Secrets Engine).

@@ -62,3 +62,4 @@ package-lock.json
 *.db-wal
 .engine/agent_engine.db
 .project/memory/
+.worktrees/
