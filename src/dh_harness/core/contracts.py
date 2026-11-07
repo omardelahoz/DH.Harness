@@ -249,3 +249,55 @@ class DestructiveOpCheckResult(BaseModel):
     is_destructive: bool
     operation_type: Optional[str] = None
     reason: str = ""
+
+class QualityControlStatus(str, Enum):
+    PASS = "PASS"
+    WARN = "WARN"
+    FAIL = "FAIL"
+    NOT_APPLICABLE = "NOT_APPLICABLE"
+
+class QualityReport(BaseModel):
+    task_id: str
+    controls: Dict[str, QualityControlStatus] = Field(default_factory=dict)
+    passed: bool = True
+    critical_failures: List[str] = Field(default_factory=list)
+    score: float = 100.0
+    evaluated_by: str = ""
+    timestamp: str = ""
+
+class AccessibilityImpact(str, Enum):
+    MINOR = "MINOR"
+    MODERATE = "MODERATE"
+    SERIOUS = "SERIOUS"
+    CRITICAL = "CRITICAL"
+
+class AccessibilityViolation(BaseModel):
+    rule_id: str
+    element: str
+    description: str
+    impact: AccessibilityImpact = AccessibilityImpact.SERIOUS
+    help_url: str = ""
+
+class UIUXAuditReport(BaseModel):
+    file_path: str
+    responsive_ok: bool = True
+    has_empty_states: bool = True
+    has_loading_states: bool = True
+    has_error_states: bool = True
+    violations: List[AccessibilityViolation] = Field(default_factory=list)
+    contrast_issues: List[str] = Field(default_factory=list)
+    score: float = 100.0
+
+class HookEventType(str, Enum):
+    SESSION_START = "SESSION_START"
+    PRE_INVOCATION = "PRE_INVOCATION"
+    PRE_TOOL_USE = "PRE_TOOL_USE"
+    POST_TOOL_USE = "POST_TOOL_USE"
+    POST_INVOCATION = "POST_INVOCATION"
+    STOP = "STOP"
+
+class HookExecutionResult(BaseModel):
+    event_type: HookEventType
+    allowed: bool = True
+    reason: Optional[str] = None
+    context_data: Dict[str, Any] = Field(default_factory=dict)
