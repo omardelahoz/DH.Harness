@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dh-harness"
+version = "0.1.0"
+description = "DH Engineering Harness for Google Antigravity - Agentic Software Engineering, TDD & Workflow Governance"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Omar De La Hoz" }
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "google-antigravity>=0.1.23",
+    "pydantic>=2.10.0",
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+    "structlog>=24.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "flake8>=7.0.0",
+]
+
+[project.scripts]
+dh-harness = "dh_harness.cli.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,35 @@
+{
+  "name": "dh-harness",
+  "version": "0.1.0",
+  "description": "DH Engineering Harness for Google Antigravity - Agentic Software Engineering, TDD & Workflow Governance",
+  "main": "bin/cli.js",
+  "bin": {
+    "dh-harness": "./bin/cli.js"
+  },
+  "keywords": [
+    "antigravity",
+    "agentic",
+    "ai",
+    "tdd",
+    "harness",
+    "graviton",
+    "governance"
+  ],
+  "author": "Omar De La Hoz",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omardelahoz/DH.Harness.git"
+  },
+  "bugs": {
+    "url": "https://github.com/omardelahoz/DH.Harness/issues"
+  },
+  "homepage": "https://github.com/omardelahoz/DH.Harness#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "test": "node bin/cli.js check"
+  }
+}
