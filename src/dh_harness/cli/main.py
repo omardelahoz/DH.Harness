@@ -23,6 +23,12 @@ tdd_app = typer.Typer(
 )
 app.add_typer(tdd_app, name="tdd")
 
+agents_app = typer.Typer(
+    name="agents",
+    help="Specialized agent ecosystem and delegation registry (info.md Section 4)"
+)
+app.add_typer(agents_app, name="agents")
+
 console = Console()
 
 def _load_project_tasks() -> TaskManager:
@@ -49,20 +55,30 @@ def _load_project_tasks() -> TaskManager:
         id="DH-003",
         title="Mandatory TDD Advanced Engine & False Test Detector",
         description="Detect empty tests, trivial assertions, cryptographic RED evidence, and TDD guard",
-        state=TaskState.IN_PROGRESS,
+        state=TaskState.DONE,
+        evidence=["PR #3 merged into main with Graviton Task 3 COMPLETED"],
         dependencies=["DH-002"],
         priority=1
     )
     t4 = HierarchicalTask(
         id="DH-004",
         title="Agent Ecosystem & Specialized Roles Catalog",
-        description="Implement specialized agent registry according to info.md Section 4",
-        state=TaskState.BACKLOG,
+        description="Implement specialized agent registry, delegation contracts, and independent review guard",
+        state=TaskState.DONE,
+        evidence=["Graviton Task 4 COMPLETED (Agent Ecosystem, Delegation Engine, Independent Review Guard)"],
         dependencies=["DH-003"],
-        priority=2
+        priority=1
+    )
+    t5 = HierarchicalTask(
+        id="DH-005",
+        title="Memory Engine, Session Recovery & Context Preservation",
+        description="Implement hierarchical memory, auto-recovery on restart, context truncation protection",
+        state=TaskState.READY,
+        dependencies=["DH-004"],
+        priority=1
     )
 
-    for t in [t1, t2, t3, t4]:
+    for t in [t1, t2, t3, t4, t5]:
         mgr.register_task(t)
     return mgr
 
@@ -160,6 +176,53 @@ def audit_tests(path: str = typer.Argument("tests", help="Directory or file path
             border_style="red"
         ))
         raise typer.Exit(code=1)
+
+@agents_app.command(name="list")
+def list_agents():
+    """List all specialized engineering agents registered in the harness catalog."""
+    from dh_harness.agents.registry import AgentRegistry
+    registry = AgentRegistry()
+    registry.load_defaults()
+    agents = registry.list_agents()
+
+    table = Table(title="Specialized Agents Catalog (info.md Section 4)")
+    table.add_column("Agent ID", style="cyan", no_wrap=True)
+    table.add_column("Name", style="bold white")
+    table.add_column("Role", style="magenta")
+    table.add_column("Allowed Tools", style="green")
+
+    for a in agents:
+        tools_str = ", ".join(t.value for t in a.allowed_tools)
+        table.add_row(a.id, a.name, a.role.value, tools_str)
+
+    console.print(table)
+
+@agents_app.command(name="show")
+def show_agent(agent_id: str = typer.Argument(..., help="Unique identifier of the agent")):
+    """Show detailed specifications and permissions for a specialized agent."""
+    from dh_harness.agents.registry import AgentRegistry
+    registry = AgentRegistry()
+    registry.load_defaults()
+    agent = registry.get_agent(agent_id)
+    if not agent:
+        console.print(f"[bold red]Error:[/bold red] Agent '{agent_id}' not found.")
+        raise typer.Exit(code=1)
+
+    tools_str = ", ".join(t.value for t in agent.allowed_tools)
+    skills_str = ", ".join(agent.required_skills)
+    criteria_str = "\n".join(f"- {c}" for c in agent.evaluation_criteria)
+
+    console.print(Panel(
+        f"[bold cyan]ID:[/bold cyan] {agent.id}\n"
+        f"[bold]Name:[/bold] {agent.name}\n"
+        f"[bold magenta]Role:[/bold magenta] {agent.role.value}\n"
+        f"[bold]Description:[/bold] {agent.description}\n\n"
+        f"[bold green]Allowed Tools:[/bold green] {tools_str}\n"
+        f"[bold yellow]Required Skills:[/bold yellow] {skills_str}\n\n"
+        f"[bold]Evaluation Criteria:[/bold]\n{criteria_str}",
+        title=f"Agent Specification: {agent.name}",
+        expand=False
+    ))
 
 @app.command()
 def classify(prompt: str):

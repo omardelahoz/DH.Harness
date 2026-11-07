@@ -31,6 +31,53 @@ class TaskState(str, Enum):
     DONE = "DONE"
     CANCELLED = "CANCELLED"
 
+class AgentRole(str, Enum):
+    ORCHESTRATOR = "ORCHESTRATOR"
+    SOLUTION_ARCHITECT = "SOLUTION_ARCHITECT"
+    BACKEND_DEVELOPER = "BACKEND_DEVELOPER"
+    FRONTEND_DEVELOPER = "FRONTEND_DEVELOPER"
+    DATABASE_ENGINEER = "DATABASE_ENGINEER"
+    SECURITY_ENGINEER = "SECURITY_ENGINEER"
+    CODE_REVIEWER = "CODE_REVIEWER"
+    QA_ENGINEER = "QA_ENGINEER"
+    TECHNICAL_WRITER = "TECHNICAL_WRITER"
+
+class ToolPermission(str, Enum):
+    READ_ONLY = "READ_ONLY"
+    FILE_WRITE = "FILE_WRITE"
+    RUN_COMMAND = "RUN_COMMAND"
+    TERMINAL_SANDBOX = "TERMINAL_SANDBOX"
+    GIT_OPERATIONS = "GIT_OPERATIONS"
+    MCP_TOOLS = "MCP_TOOLS"
+
+class AgentDefinition(BaseModel):
+    id: str
+    name: str
+    role: AgentRole
+    description: str = ""
+    allowed_tools: List[ToolPermission] = Field(default_factory=list)
+    required_skills: List[str] = Field(default_factory=list)
+    evaluation_criteria: List[str] = Field(default_factory=list)
+    system_prompt_template: str = ""
+
+class AgentTaskContract(BaseModel):
+    task_id: str
+    agent_id: str
+    objective: str
+    context: Dict[str, Any] = Field(default_factory=dict)
+    input_artifacts: List[str] = Field(default_factory=list)
+    expected_outputs: List[str] = Field(default_factory=list)
+
+class AgentExecutionResult(BaseModel):
+    task_id: str
+    agent_id: str
+    status: str
+    changes_made: List[str] = Field(default_factory=list)
+    tests_run: List[str] = Field(default_factory=list)
+    evidence: List[str] = Field(default_factory=list)
+    output_artifacts: List[str] = Field(default_factory=list)
+    blockers: List[str] = Field(default_factory=list)
+
 class ClassificationResult(BaseModel):
     mode: InteractionMode
     tdd_required: bool
