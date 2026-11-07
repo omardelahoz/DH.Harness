@@ -1,9 +1,9 @@
 # Project Status Dashboard (`.project/STATUS.md`)
 
 - **Proyecto:** DH Engineering Harness for Antigravity
-- **Versión:** 0.1.0-alpha
-- **Estado Actual:** Foundation & Core Architecture Completed (Graviton AEE Validated)
-- **Rama Activa:** `feature/DH-001-harness-foundation`
+- **Versión:** 0.2.0-alpha
+- **Estado Actual:** Fase 1 Completed (Master Orchestrator, DAG & Continuity Engine Operational)
+- **Rama Activa:** `feature/DH-002-orchestrator-continuity`
 - **Repositorio Remoto:** https://github.com/omardelahoz/DH.Harness (Público, Rama `main` protegida)
 
 ---
@@ -12,27 +12,23 @@
 
 | Indicador | Valor |
 | :--- | :--- |
-| **Tareas Totales AEE** | 1 |
-| **Tareas Completadas** | 1 (Task 1: Bootstrap DH Engineering Harness Foundation) |
+| **Tareas Totales AEE** | 2 |
+| **Tareas Completadas** | 2 (Task 1: Bootstrap Foundation, Task 2: Orchestrator & Continuity) |
 | **Tareas En Progreso** | 0 |
 | **Tareas Bloqueadas** | 0 |
-| **Pasos AEE Verificados** | 5 de 5 (100% PASS) |
-| **Pruebas Automatizadas** | 8 tests pasando en pytest |
+| **Pasos AEE Verificados** | 11 de 11 (100% PASS) |
+| **Pruebas Automatizadas** | 29 tests pasando en pytest |
 | **Licencias Auditadas** | 100% Permisivas (Apache-2.0 / MIT) |
 | **Antigravity SDK** | Instalado y verificado (v0.1.23) |
-| **CLI Wrapper Node** | Verificado (`bin/cli.js`) |
+| **Continuity Command** | Operativo (`dh-harness continue` / `npx dh-harness continue`) |
 
 ---
 
 ## Registro de Actividades Recientes
 
-1. Especificación de producto [info.md](file:///D:/Proyectos/DH/DH.Harness/info.md) analizada exhaustivamente.
-2. Repositorio Git inicializado y publicado en GitHub (`omardelahoz/DH.Harness`).
-3. Protección de rama configurada en `main` para forzar revisión y Pull Requests.
-4. Motor AEE Graviton inicializado en `.engine/` con SQLite y verificadores deterministas.
-5. Memoria `.project/` inicializada con reglas, especificaciones y criterios de gobernanza.
-6. Entorno virtual creado e instalación de `google-antigravity` (0.1.23) y dependencias.
-7. Empaquetado dual configurado: Node CLI (`package.json`, `bin/cli.js`) y Python (`pyproject.toml`).
-8. Implementación del núcleo: contracts, SDK adapter, classifier, TDD engine, memory engine y CLI Typer.
-9. Documentación técnica completa generada (`README.md`, C4 architecture, ADRs 001-003, guías TDD y CLI).
-10. Tarea 1 ejecutada y verificada al 100% en SQLite mediante Graviton AEE (`🟢 COMPLETED`).
+1. Implementado `DependencyGraph` con algoritmo de ordenamiento topológico y detección de ciclos (`src/dh_harness/tasks/dag.py`).
+2. Implementado `TaskManager` con validación de máquina de estados de 11 fases y guardas de precondición (`src/dh_harness/tasks/manager.py`).
+3. Implementado `ContinuityEngine` para diagnóstico determinista y recomendación de tareas (`src/dh_harness/continuity/engine.py`).
+4. Implementado `MasterOrchestrator` y catálogo de workflows ejecutables (`BugFixWorkflow`, `FeatureDevelopmentWorkflow`, `InvestigationWorkflow`).
+5. Añadido comando interactivo de continuidad en CLI: `dh-harness continue` y `node bin/cli.js continue`.
+6. Tarea 2 verificada al 100% en SQLite mediante Graviton AEE (`🟢 COMPLETED`).
