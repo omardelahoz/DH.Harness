@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -28,6 +29,12 @@ agents_app = typer.Typer(
     help="Specialized agent ecosystem and delegation registry (info.md Section 4)"
 )
 app.add_typer(agents_app, name="agents")
+
+memory_app = typer.Typer(
+    name="memory",
+    help="Persistent memory engine, session checkpoints and recovery (info.md Section 8)"
+)
+app.add_typer(memory_app, name="memory")
 
 console = Console()
 
@@ -73,12 +80,21 @@ def _load_project_tasks() -> TaskManager:
         id="DH-005",
         title="Memory Engine, Session Recovery & Context Preservation",
         description="Implement hierarchical memory, auto-recovery on restart, context truncation protection",
-        state=TaskState.READY,
+        state=TaskState.DONE,
+        evidence=["Graviton Task 5 COMPLETED (MultiLevelMemory, Checkpoints with SHA-256, Truncation Guard)"],
         dependencies=["DH-004"],
         priority=1
     )
+    t6 = HierarchicalTask(
+        id="DH-006",
+        title="Skills Registry & Workflow Engine",
+        description="Implement dynamic skill discovery, capability matching, and composable workflows",
+        state=TaskState.READY,
+        dependencies=["DH-005"],
+        priority=1
+    )
 
-    for t in [t1, t2, t3, t4, t5]:
+    for t in [t1, t2, t3, t4, t5, t6]:
         mgr.register_task(t)
     return mgr
 
@@ -246,6 +262,98 @@ def check():
     else:
         console.print("[red][✖] Some tests failed.[/red]")
         raise typer.Exit(code=res.returncode)
+
+@memory_app.command(name="status")
+def memory_status():
+    """Display multi-level memory statistics, knowledge items, and checkpoint status."""
+    workspace = os.getcwd()
+    memory = MemoryEngine(workspace)
+    summary = memory.get_summary()
+
+    console.print(Panel(
+        f"[bold cyan]Multi-Level Memory & Session State[/bold cyan]\n"
+        f"Memory Directory: [yellow]{memory.memory_dir}[/yellow]",
+        title="Memory Engine Dashboard",
+        expand=False
+    ))
+
+    table = Table(title="Memory Storage Overview")
+    table.add_column("Level / Resource", style="cyan")
+    table.add_column("Count", style="magenta")
+    table.add_column("Description", style="green")
+
+    table.add_row("Global Memory", str(summary["global_entries"]), "Engineering principles & global policies")
+    table.add_row("Project Memory", str(summary["project_entries"]), "Architectural decisions, stack & status")
+    table.add_row("Task Memory", str(summary["task_entries"]), "Active task objectives & state")
+    table.add_row("Knowledge Base", str(summary["knowledge_entries"]), "Curated solutions & known bug patterns")
+
+    latest_chk = summary["latest_checkpoint"]
+    chk_str = f"Session: {latest_chk['session_id']} (Task: {latest_chk['active_task_id']})" if latest_chk else "None"
+    table.add_row("Latest Checkpoint", "1" if latest_chk else "0", chk_str)
+
+    console.print(table)
+
+@memory_app.command(name="checkpoint")
+def memory_checkpoint(
+    session_id: str = typer.Option(None, "--session", "-s", help="Optional explicit session ID"),
+    task_id: str = typer.Option(None, "--task", "-t", help="Active task ID")
+):
+    """Create an instant cryptographic session checkpoint with SHA-256 verification."""
+    workspace = os.getcwd()
+    memory = MemoryEngine(workspace)
+
+    sess_id = session_id or f"sess_{int(datetime.now().timestamp())}"
+    active_task = task_id or "DH-005"
+
+    branch = "main"
+    try:
+        import subprocess
+        res = subprocess.run(["git", "branch", "--show-current"], capture_output=True, text=True)
+        if res.returncode == 0 and res.stdout.strip():
+            branch = res.stdout.strip()
+    except Exception:
+        pass
+
+    chk = memory.checkpoints.create_checkpoint(
+        session_id=sess_id,
+        active_task_id=active_task,
+        active_branch=branch,
+        recent_actions=["CLI manual checkpoint invoked"],
+        pending_steps=["Continue task execution"]
+    )
+
+    console.print(Panel(
+        f"[bold green]✔ Checkpoint Created Successfully![/bold green]\n"
+        f"[bold cyan]Session ID:[/bold cyan] {chk.session_id}\n"
+        f"[bold]Active Task:[/bold] {chk.active_task_id}\n"
+        f"[bold]Active Branch:[/bold] {chk.active_branch}\n"
+        f"[bold]SHA-256 Checksum:[/bold] {chk.checksum}",
+        title="Session Checkpoint",
+        border_style="green"
+    ))
+
+@memory_app.command(name="recover")
+def memory_recover():
+    """Recover the latest verified session checkpoint and print its compact context digest."""
+    workspace = os.getcwd()
+    memory = MemoryEngine(workspace)
+    chk = memory.checkpoints.get_latest_checkpoint()
+
+    if not chk:
+        console.print("[yellow]No session checkpoints found to recover.[/yellow]")
+        return
+
+    digest = memory.truncation_guard.generate_compact_digest(
+        checkpoint=chk,
+        memory=memory.levels,
+        recent_events=["Session restored from checkpoint"]
+    )
+
+    console.print(Panel(
+        digest,
+        title=f"Recovered Session: {chk.session_id}",
+        border_style="cyan"
+    ))
 
 if __name__ == "__main__":
     app()
