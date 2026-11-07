@@ -223,3 +223,29 @@ class DoDVerificationResult(BaseModel):
     satisfied: bool
     missing_criteria: List[str] = Field(default_factory=list)
     evidence_collected: List[str] = Field(default_factory=list)
+
+class SecuritySeverity(str, Enum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+    CRITICAL = "CRITICAL"
+
+class SecretFinding(BaseModel):
+    file_path: str
+    line_number: int
+    secret_type: str
+    snippet_redacted: str
+    severity: SecuritySeverity = SecuritySeverity.HIGH
+
+class LicenseAuditFinding(BaseModel):
+    package_name: str
+    version: str
+    license_spdx: str
+    is_allowed: bool
+    risk_level: str
+
+class DestructiveOpCheckResult(BaseModel):
+    command: str
+    is_destructive: bool
+    operation_type: Optional[str] = None
+    reason: str = ""

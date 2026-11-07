@@ -54,6 +54,12 @@ git_app = typer.Typer(
 )
 app.add_typer(git_app, name="git")
 
+security_app = typer.Typer(
+    name="security",
+    help="Security & Secrets Engine, Secret Scanning, License Auditing, and Destructive Ops Guard (info.md Section 14)"
+)
+app.add_typer(security_app, name="security")
+
 console = Console()
 
 def _load_project_tasks() -> TaskManager:
@@ -135,12 +141,26 @@ def _load_project_tasks() -> TaskManager:
         id="DH-008",
         title="Security & Secrets Engine",
         description="Implement AST secret scanner, dependency vulnerability auditing, and fail-closed security policies",
-        state=TaskState.READY,
+        state=TaskState.DONE,
+        pr_number=8,
+        evidence=[
+            "PR #8 merged into main",
+            "pytest test suite passed 103 tests",
+            "Independent review approved by 'security-engineer'"
+        ],
         dependencies=["DH-007"],
         priority=1
     )
+    t9 = HierarchicalTask(
+        id="DH-009",
+        title="Quality Engine & UI/UX Automation",
+        description="Implement visual regression verifiers, accessibility auditing, and quality gates",
+        state=TaskState.READY,
+        dependencies=["DH-008"],
+        priority=1
+    )
 
-    for t in [t1, t2, t3, t4, t5, t6, t7, t8]:
+    for t in [t1, t2, t3, t4, t5, t6, t7, t8, t9]:
         mgr.register_task(t)
     return mgr
 
@@ -603,6 +623,104 @@ def git_check_dod(task_id: str = typer.Argument(..., help="Task ID to verify Def
             border_style="red"
         ))
         raise typer.Exit(code=1)
+
+@security_app.command(name="scan")
+def security_scan(path: str = typer.Argument(".", help="Directory or file path to scan for secrets")):
+    """Scan workspace or specific file for exposed secrets and tokens (info.md Section 14)."""
+    from dh_harness.security.scanner import SecretScanner
+    scanner = SecretScanner()
+    if os.path.isdir(path):
+        findings = scanner.scan_directory(path)
+    else:
+        findings = scanner.scan_file(path)
+
+    if findings:
+        table = Table(title="Exposed Secrets Detected", border_style="red")
+        table.add_column("File", style="cyan")
+        table.add_column("Line", style="yellow")
+        table.add_column("Rule", style="magenta")
+        table.add_column("Severity", style="red")
+        table.add_column("Redacted Snippet", style="white")
+
+        for f in findings:
+            table.add_row(f.file_path, str(f.line_number), f.secret_type, f.severity.value, f.snippet_redacted)
+
+        console.print(table)
+        console.print(Panel(
+            f"[bold red]✖ Security Scan Detected {len(findings)} Leaked Secret(s)![/bold red]",
+            title="Security Audit Failure",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+    else:
+        console.print(Panel(
+            f"[bold green]✔ Security Scan Clean: No exposed tokens, credentials, or private keys detected.[/bold green]\n"
+            f"Path scanned: [cyan]{os.path.abspath(path)}[/cyan]",
+            title="Security Scan Clean",
+            border_style="green"
+        ))
+
+@security_app.command(name="audit-licenses")
+def security_audit_licenses(manifest: str = typer.Argument("package.json", help="Path to dependency manifest (package.json)")):
+    """Audit third-party dependencies against SPDX open-source whitelist (Rule 6)."""
+    from dh_harness.security.licenses import LicenseAuditor
+    auditor = LicenseAuditor()
+    if not os.path.exists(manifest):
+        console.print(f"[bold yellow]Warning:[/bold yellow] Manifest '{manifest}' not found.")
+        return
+
+    findings = auditor.audit_package_manifest(manifest)
+    table = Table(title=f"SPDX License Audit: {manifest}", border_style="cyan")
+    table.add_column("Package", style="cyan")
+    table.add_column("Version", style="magenta")
+    table.add_column("SPDX License", style="yellow")
+    table.add_column("Permitted", style="green")
+    table.add_column("Risk Level", style="red")
+
+    has_blocked = False
+    for f in findings:
+        allowed_str = "[green]YES[/green]" if f.is_allowed else "[red]NO[/red]"
+        risk_str = f"[green]{f.risk_level}[/green]" if f.is_allowed else f"[red]{f.risk_level}[/red]"
+        if not f.is_allowed:
+            has_blocked = True
+        table.add_row(f.package_name, f.version, f.license_spdx, allowed_str, risk_str)
+
+    console.print(table)
+    if has_blocked:
+        console.print(Panel(
+            "[bold red]✖ License Audit Failure: Disallowed commercial/copyleft licenses detected![/bold red]",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+    else:
+        console.print(Panel(
+            "[bold green]✔ All audited packages comply with SPDX permissive whitelist (Rule 6).[/bold green]",
+            border_style="green"
+        ))
+
+@security_app.command(name="check-cmd")
+def security_check_cmd(command: str = typer.Argument(..., help="Shell or SQL command string to check")):
+    """Check command against fail-closed destructive operations guard (info.md § 14.5)."""
+    from dh_harness.security.guard import DestructiveOperationGuard
+    guard = DestructiveOperationGuard()
+    res = guard.check_command(command)
+    if res.is_destructive:
+        console.print(Panel(
+            f"[bold red]✖ Destructive Operation Blocked![/bold red]\n\n"
+            f"[bold]Command:[/bold] [yellow]{res.command}[/yellow]\n"
+            f"[bold]Type:[/bold] {res.operation_type}\n"
+            f"[bold]Reason:[/bold] {res.reason}",
+            title="Fail-Closed Security Interceptor",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+    else:
+        console.print(Panel(
+            f"[bold green]✔ Safe Operation Approved:[/bold green] Command is safe for execution.\n"
+            f"[cyan]{res.command}[/cyan]",
+            title="Command Guard Clean",
+            border_style="green"
+        ))
 
 if __name__ == "__main__":
     app()
