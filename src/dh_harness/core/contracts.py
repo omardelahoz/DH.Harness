@@ -297,6 +297,10 @@ class HookEventType(str, Enum):
     PRE_INVOCATION = "PRE_INVOCATION"
     PRE_TOOL_USE = "PRE_TOOL_USE"
     POST_TOOL_USE = "POST_TOOL_USE"
+    PRE_FILE_WRITE = "PRE_FILE_WRITE"
+    POST_FILE_WRITE = "POST_FILE_WRITE"
+    PRE_GIT_PUSH = "PRE_GIT_PUSH"
+    ON_TASK_BLOCKED = "ON_TASK_BLOCKED"
     POST_INVOCATION = "POST_INVOCATION"
     STOP = "STOP"
 
@@ -367,3 +371,90 @@ class ReleaseManifest(BaseModel):
     spdx_compliance: str = "100% Permissive (MIT / Apache-2.0)"
     release_date: str = ""
     artifacts: List[str] = Field(default_factory=list)
+
+# --- Wave 2: Advanced Security, SAST, SCA, STRIDE, MCP & Complexity Models ---
+
+class SASTFinding(BaseModel):
+    rule_id: str
+    file_path: str
+    line_number: int
+    severity: SecuritySeverity = SecuritySeverity.HIGH
+    cwe_id: str = "CWE-Unknown"
+    description: str
+    code_snippet: str = ""
+    remediation: str = ""
+
+class SASTScanResult(BaseModel):
+    findings: List[SASTFinding] = Field(default_factory=list)
+    total_files_scanned: int = 0
+    passed: bool = True
+
+class SCAVulnerabilityFinding(BaseModel):
+    package_name: str
+    installed_version: str
+    cve_id: str
+    severity: SecuritySeverity = SecuritySeverity.HIGH
+    description: str = ""
+    fixed_version: str = ""
+    advisory_url: str = ""
+
+class SCAScanResult(BaseModel):
+    manifest_path: str
+    vulnerabilities: List[SCAVulnerabilityFinding] = Field(default_factory=list)
+    total_dependencies: int = 0
+    passed: bool = True
+
+class STRIDECategory(str, Enum):
+    SPOOFING = "SPOOFING"
+    TAMPERING = "TAMPERING"
+    REPUDIATION = "REPUDIATION"
+    INFORMATION_DISCLOSURE = "INFORMATION_DISCLOSURE"
+    DENIAL_OF_SERVICE = "DENIAL_OF_SERVICE"
+    ELEVATION_OF_PRIVILEGE = "ELEVATION_OF_PRIVILEGE"
+
+class ThreatFinding(BaseModel):
+    id: str
+    category: STRIDECategory
+    component: str
+    risk_level: SecuritySeverity = SecuritySeverity.HIGH
+    threat_description: str
+    mitigation_strategy: str
+
+class ThreatModelReport(BaseModel):
+    target: str
+    threats: List[ThreatFinding] = Field(default_factory=list)
+    risk_score: float = 100.0
+
+class MCPServerState(str, Enum):
+    STOPPED = "STOPPED"
+    STARTING = "STARTING"
+    RUNNING = "RUNNING"
+    ERROR = "ERROR"
+    UNRESPONSIVE = "UNRESPONSIVE"
+
+class MCPToolSchema(BaseModel):
+    name: str
+    description: str = ""
+    server_name: str
+    input_schema: Dict[str, Any] = Field(default_factory=dict)
+
+class MCPServerInfo(BaseModel):
+    name: str
+    command: str
+    args: List[str] = Field(default_factory=list)
+    description: str = ""
+    state: MCPServerState = MCPServerState.STOPPED
+    tool_count: int = 0
+    latency_ms: Optional[float] = None
+
+class ComplexityViolation(BaseModel):
+    file_path: str
+    function_name: str
+    complexity_score: int
+    max_allowed: int = 10
+    line_number: int = 1
+
+class ComplexityReport(BaseModel):
+    violations: List[ComplexityViolation] = Field(default_factory=list)
+    files_analyzed: int = 0
+    passed: bool = True

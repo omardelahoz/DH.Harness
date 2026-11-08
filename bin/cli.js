@@ -55,11 +55,12 @@ Agentic Software Engineering, Deterministic TDD & Workflow Governance
 \x1b[1mENGINEERING SUITES:\x1b[0m
   \x1b[32mskills <list|show|match>\x1b[0m   Built-in engineering skills catalog and dynamic matching
   \x1b[32magents <list|show>\x1b[0m         Specialized agents catalog, contracts, and role boundaries
-  \x1b[32mtdd <audit-tests>\x1b[0m          Deterministic TDD engine and AST false test detector
-  \x1b[32mtask <start|step|run|status>\x1b[0m Step-by-step task execution and verification engine
+  \x1b[32mtdd <audit-tests|complexity>\x1b[0m Deterministic TDD engine, AST test detector & cyclomatic complexity
   \x1b[32mgit <check-dod|validate-commit>\x1b[0m Git governance, conventional commits, and DoD audit
-  \x1b[32msec <scan|licenses>\x1b[0m        AST secret scanner and SPDX permissive license whitelist
-  \x1b[32mquality <audit>\x1b[0m            Quality engine, gates, and independent review enforcement
+  \x1b[32msecurity <scan|sast|sca|stride>\x1b[0m AST secret scanner, SAST static analysis, SCA and STRIDE model
+  \x1b[32mhooks <list|audit>\x1b[0m          Lifecycle hooks engine, file guards and event traceability
+  \x1b[32mmcp <list|ping|inspect>\x1b[0m     Model Context Protocol dynamic manager and server health
+  \x1b[32mquality <check>\x1b[0m            Quality engine, gates, and independent review enforcement
   \x1b[32mdocs <adr list|adr new>\x1b[0m    Architecture Decision Records (ADRs) automation
   \x1b[32march <audit>\x1b[0m               Clean Architecture layer boundaries static auditor
   \x1b[32mrelease <manifest>\x1b[0m         Build and inspect formal release manifest
