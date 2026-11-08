@@ -181,3 +181,63 @@ class MultiLevelMemory:
                 tags=tags
             ))
         return items
+
+    def search_knowledge_semantic(self, query: str, top_k: int = 5) -> List[Any]:
+        """Performs semantic vector search across all stored knowledge items."""
+        from dh_harness.memory.semantic import LocalSemanticSearchEngine
+        all_items = self.find_knowledge()
+
+        if not all_items:
+            default_items = [
+                KnowledgeItem(
+                    key="clean_architecture_rule",
+                    category="architecture",
+                    summary="Clean architecture, thin controllers, and repository isolation",
+                    content="Keep controllers thin. All Dapper or EF Core database queries must live in the infrastructure layer repository. Controllers only invoke use cases.",
+                    tags=["architecture", "backend", "clean-architecture"]
+                ),
+                KnowledgeItem(
+                    key="tdd_cryptographic_evidence",
+                    category="testing",
+                    summary="Deterministic TDD RED-GREEN-REFACTOR cycle with RedEvidenceVault",
+                    content="Every bug fix and feature implementation must record cryptographic RED test failure evidence before modifying files in src/.",
+                    tags=["tdd", "testing", "quality"]
+                ),
+                KnowledgeItem(
+                    key="appsec_security_governance",
+                    category="security",
+                    summary="AST secret scanner, SAST, SCA, and STRIDE threat modeling",
+                    content="Zero plain-text secrets allowed. Dependencies must be 100% open source under permissive SPDX whitelist (MIT, Apache-2.0, BSD).",
+                    tags=["security", "sast", "sca", "licenses"]
+                ),
+                KnowledgeItem(
+                    key="visual_layout_and_a11y",
+                    category="uiux",
+                    summary="Headless visual layout QA, responsive viewports, and WCAG 2.1 AA",
+                    content="Validate responsive containers without fixed pixel overflow, minimum 44x44px touch targets on mobile, and complete loading/empty/error states.",
+                    tags=["uiux", "accessibility", "frontend"]
+                ),
+                KnowledgeItem(
+                    key="database_persistence_standards",
+                    category="database",
+                    summary="Relational database design, migrations, and parameterized queries",
+                    content="Use parameterized queries with PostgreSQL and SQL Server to prevent SQL injection. Migrations must be idempotent and transactional.",
+                    tags=["database", "postgresql", "sqlserver", "dapper"]
+                )
+            ]
+            for it in default_items:
+                self.store_knowledge(it)
+            all_items = default_items
+
+        docs = [
+            {
+                "key": item.key,
+                "category": item.category,
+                "summary": item.summary,
+                "content": item.content
+            }
+            for item in all_items
+        ]
+        engine = LocalSemanticSearchEngine()
+        engine.index_documents(docs)
+        return engine.search(query, top_k=top_k)
