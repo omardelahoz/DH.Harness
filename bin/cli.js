@@ -53,17 +53,20 @@ Agentic Software Engineering, Deterministic TDD & Workflow Governance
   \x1b[32mcheck\x1b[0m                   Run quality gates, verification tests, and audits
 
 \x1b[1mENGINEERING SUITES:\x1b[0m
-  \x1b[32mskills <list|show|match>\x1b[0m   Built-in engineering skills catalog and dynamic matching
-  \x1b[32magents <list|show>\x1b[0m         Specialized agents catalog, contracts, and role boundaries
-  \x1b[32mtdd <audit-tests|complexity>\x1b[0m Deterministic TDD engine, AST test detector & cyclomatic complexity
-  \x1b[32mgit <check-dod|validate-commit>\x1b[0m Git governance, conventional commits, and DoD audit
-  \x1b[32msecurity <scan|sast|sca|stride>\x1b[0m AST secret scanner, SAST static analysis, SCA and STRIDE model
-  \x1b[32mhooks <list|audit>\x1b[0m          Lifecycle hooks engine, file guards and event traceability
-  \x1b[32mmcp <list|ping|inspect>\x1b[0m     Model Context Protocol dynamic manager and server health
-  \x1b[32mquality <check>\x1b[0m            Quality engine, gates, and independent review enforcement
-  \x1b[32mdocs <adr list|adr new>\x1b[0m    Architecture Decision Records (ADRs) automation
-  \x1b[32march <audit>\x1b[0m               Clean Architecture layer boundaries static auditor
-  \x1b[32mrelease <manifest>\x1b[0m         Build and inspect formal release manifest
+  \x1b[32mmemory <status|checkpoint|recover|search>\x1b[0m Persistent memory, checkpoints, and L4 semantic search
+  \x1b[32mobs <metrics|costs|traces>\x1b[0m       Token/cost observability and OpenTelemetry distributed tracing
+  \x1b[32magents <list|show|benchmark>\x1b[0m    Specialized agents, contracts, and First-Pass Accuracy benchmarks
+  \x1b[32muiux <audit|visual>\x1b[0m               Accessibility WCAG 2.1 AA and headless visual/responsive layout QA
+  \x1b[32mskills <list|show|match>\x1b[0m          Built-in engineering skills catalog and dynamic matching
+  \x1b[32mtdd <audit-tests|complexity>\x1b[0m        Deterministic TDD engine, AST test detector & cyclomatic complexity
+  \x1b[32mgit <check-dod|validate-commit>\x1b[0m    Git governance, conventional commits, and DoD audit
+  \x1b[32msecurity <scan|sast|sca|stride>\x1b[0m    AST secret scanner, SAST static analysis, SCA and STRIDE model
+  \x1b[32mhooks <list|audit>\x1b[0m                 Lifecycle hooks engine, file guards and event traceability
+  \x1b[32mmcp <list|ping|inspect>\x1b[0m            Model Context Protocol dynamic manager and server health
+  \x1b[32mquality <check>\x1b[0m                   Quality engine, gates, and independent review enforcement
+  \x1b[32mdocs <adr list|adr new>\x1b[0m           Architecture Decision Records (ADRs) automation
+  \x1b[32march <audit>\x1b[0m                      Clean Architecture layer boundaries static auditor
+  \x1b[32mrelease <manifest>\x1b[0m                Build and inspect formal release manifest
 
 \x1b[1mOPTIONS:\x1b[0m
   --help, -h             Show this help message

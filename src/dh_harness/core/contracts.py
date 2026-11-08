@@ -458,3 +458,73 @@ class ComplexityReport(BaseModel):
     violations: List[ComplexityViolation] = Field(default_factory=list)
     files_analyzed: int = 0
     passed: bool = True
+
+# --- Wave 3: Semantic Memory, Observability, Visual QA & Benchmarks Models ---
+
+class SemanticSearchResult(BaseModel):
+    key: str
+    category: str = "general"
+    summary: str
+    content: str
+    similarity_score: float
+
+class TokenUsageEntry(BaseModel):
+    model_name: str
+    prompt_tokens: int
+    completion_tokens: int
+    cached_tokens: int = 0
+    total_tokens: int
+    cost_usd: float
+    timestamp: str
+
+class TokenUsageSummary(BaseModel):
+    total_prompt_tokens: int = 0
+    total_completion_tokens: int = 0
+    total_tokens: int = 0
+    total_cost_usd: float = 0.0
+    model_breakdown: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+
+class SpanTrace(BaseModel):
+    trace_id: str
+    span_id: str
+    parent_id: Optional[str] = None
+    name: str
+    start_time: str
+    end_time: str
+    duration_ms: float
+    attributes: Dict[str, Any] = Field(default_factory=dict)
+
+class VisualDefectType(str, Enum):
+    OVERFLOW = "OVERFLOW"
+    ELEMENT_OVERLAP = "ELEMENT_OVERLAP"
+    TOUCH_TARGET_TOO_SMALL = "TOUCH_TARGET_TOO_SMALL"
+    UNRESPONSIVE_WIDTH = "UNRESPONSIVE_WIDTH"
+    FONT_TOO_SMALL = "FONT_TOO_SMALL"
+
+class VisualDefectFinding(BaseModel):
+    defect_type: VisualDefectType
+    selector: str
+    viewport: str
+    description: str
+    line_number: int = 1
+    remediation: str = ""
+
+class VisualLayoutReport(BaseModel):
+    target: str
+    defects: List[VisualDefectFinding] = Field(default_factory=list)
+    viewports_tested: List[str] = Field(default_factory=list)
+    passed: bool = True
+    score: float = 100.0
+
+class AgentScorecard(BaseModel):
+    agent_id: str
+    agent_name: str
+    first_pass_accuracy: float
+    total_tasks_evaluated: int
+    tool_efficiency_ratio: float
+    architecture_adherence_score: float
+    overall_rating: str
+
+class BenchmarkLeaderboard(BaseModel):
+    scorecards: List[AgentScorecard] = Field(default_factory=list)
+    generated_at: str
