@@ -5,4 +5,4 @@
 - **REQ-003:** El clasificador de interacciones debe determinar el modo de operación basado en el texto de la solicitud, asociando el nivel de rigor apropiado.
 - **REQ-004:** El motor TDD debe validar las transiciones de fases y bloquear la implementación de cambios de código si no existe una prueba en fallo (RED).
 - **REQ-005:** El paquete debe proveer un CLI ejecutable en Node.js (`bin/cli.js`) para ser distribuido e instalado con npm, reenviando comandos al motor Python.
-- **REQ-006:** Toda la ejecución de inicialización y verificación debe ser trazable mediante el motor SQLite de Graviton AEE (`.engine/harness.py`).
+- **REQ-006:** Toda la ejecución de inicialización y verificación debe ser trazable mediante la persistencia en SQLite (`.project/memory/harness.db`) y la bóveda criptográfica SHA-256.

@@ -21,7 +21,7 @@ def test_c4_generator_creates_container_diagram():
     containers = [
         {"name": "CLI Launcher", "tech": "Node.js (bin/cli.js)", "desc": "Entry point for developers and CI/CD"},
         {"name": "Core Harness", "tech": "Python / Typer", "desc": "Domain logic, TDD engine & orchestration"},
-        {"name": "Persistent Storage", "tech": "SQLite (agent_engine.db)", "desc": "Deterministic state and audit logs"}
+        {"name": "Persistent Storage", "tech": "SQLite (harness.db)", "desc": "Deterministic state and audit logs"}
     ]
     diag = generator.generate_container_diagram(
         system_name="DH Engineering Harness",

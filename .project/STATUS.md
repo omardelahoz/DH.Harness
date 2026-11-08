@@ -33,4 +33,4 @@
 3. Implementado `ReleaseHardeningEngine` en `src/dh_harness/release/hardening.py` para validación de integración end-to-end (ciclos TDD RED-GREEN, prevención de auto-revisión de agentes, escaneo de secretos y auditoría de licencias).
 4. Comandos CLI `health` y `release manifest` expuestos en Typer y wrapper binario Node.js `bin/cli.js`.
 5. Documentado ADR-013 en `docs/decisions/ADR-013-advanced-engineering-hardening-and-release.md` y especificación técnica en `.project/specs/011-hardening-and-release/SPEC.md`.
-6. Tarea 11 verificada al 100% en SQLite mediante Graviton AEE (`🟢 COMPLETED`, 5/5 pasos).
+6. Tarea 11 verificada al 100% en SQLite mediante DH Engineering Harness (`🟢 COMPLETED`, 5/5 pasos).

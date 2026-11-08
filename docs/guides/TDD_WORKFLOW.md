@@ -32,10 +32,10 @@ REQUIREMENT -> TEST RED -> IMPLEMENT GREEN -> REFACTOR -> VERIFY -> DONE
 - Comprobar que todas las pruebas permanecen en verde.
 
 ### 5. VERIFY
-- Ejecutar la suite completa y registrar el paso en Graviton AEE:
+- Ejecutar la suite completa y validar calidad con DH Engineering Harness:
   ```bash
-  python .engine/harness.py run-next <task_id>
+  dh-harness check
   ```
 
 ### 6. DONE
-- La tarea solo se marca como `🟢 COMPLETED` cuando SQLite confirma que todos los pasos y verificadores pasaron exitosamente.
+- La tarea solo se marca como `🟢 COMPLETED` cuando la suite de pruebas unitarias pasa al 100% y se cumplen los criterios de Definition of Done (DoD).

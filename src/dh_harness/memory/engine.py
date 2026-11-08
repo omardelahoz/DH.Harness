@@ -16,9 +16,9 @@ class MemoryEngine:
 
     def __init__(self, workspace_root: str):
         self.workspace_root = workspace_root
-        self.engine_db = os.path.join(workspace_root, ".engine", "agent_engine.db")
         self.project_dir = os.path.join(workspace_root, ".project")
         self.memory_dir = os.path.join(self.project_dir, "memory")
+        self.harness_db = os.path.join(self.memory_dir, "harness.db")
 
         self.levels = MultiLevelMemory(self.memory_dir)
         self.checkpoints = CheckpointManager(self.memory_dir)
@@ -30,9 +30,9 @@ class MemoryEngine:
         blocked_count = 0
         running_count = 0
 
-        if os.path.exists(self.engine_db):
+        if os.path.exists(self.harness_db):
             try:
-                conn = sqlite3.connect(self.engine_db)
+                conn = sqlite3.connect(self.harness_db)
                 cur = conn.cursor()
                 cur.execute("SELECT status, COUNT(*) FROM tasks GROUP BY status")
                 for status, count in cur.fetchall():
