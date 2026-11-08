@@ -41,6 +41,8 @@ class AgentRole(str, Enum):
     CODE_REVIEWER = "CODE_REVIEWER"
     QA_ENGINEER = "QA_ENGINEER"
     TECHNICAL_WRITER = "TECHNICAL_WRITER"
+    MOBILE_DEVELOPER = "MOBILE_DEVELOPER"
+    DEVOPS_ENGINEER = "DEVOPS_ENGINEER"
 
 class ToolPermission(str, Enum):
     READ_ONLY = "READ_ONLY"
@@ -169,6 +171,8 @@ class SkillCategory(str, Enum):
     SECURITY = "SECURITY"
     DEVOPS = "DEVOPS"
     ARCHITECTURE = "ARCHITECTURE"
+    MOBILE = "MOBILE"
+    CLOUD = "CLOUD"
 
 class SkillDefinition(BaseModel):
     id: str

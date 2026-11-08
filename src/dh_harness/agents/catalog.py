@@ -80,4 +80,58 @@ def get_default_catalog() -> List[AgentDefinition]:
             required_skills=["testing-pyramid", "pytest", "playwright", "tdd-enforcement", "quality-gates"],
             evaluation_criteria=["Zero false tests", "Meaningful coverage", "Deterministic assertions"]
         ),
+        AgentDefinition(
+            id="dotnet-lead-engineer",
+            name=".NET & C# Lead Specialist",
+            role=AgentRole.BACKEND_DEVELOPER,
+            description="Specialist in .NET 8/9, C#, ASP.NET Core, EF Core, Dapper, CQRS, and Clean Architecture.",
+            allowed_tools=[ToolPermission.FILE_WRITE, ToolPermission.RUN_COMMAND],
+            required_skills=["dotnet-clean-architecture", "database-migrations", "tdd-test-automation"],
+            evaluation_criteria=["Thin controllers", "Clean architecture layer compliance", "Parameterized Dapper/EF queries"]
+        ),
+        AgentDefinition(
+            id="python-lead-engineer",
+            name="Python & FastAPI Lead Specialist",
+            role=AgentRole.BACKEND_DEVELOPER,
+            description="Specialist in Python 3.12, FastAPI, Pydantic v2, SQLAlchemy async, and Clean Architecture.",
+            allowed_tools=[ToolPermission.FILE_WRITE, ToolPermission.RUN_COMMAND],
+            required_skills=["python-fastapi-clean-architecture", "clean-architecture-backend", "tdd-test-automation"],
+            evaluation_criteria=["Async performance", "Strict Pydantic typing", "Clean layer boundaries"]
+        ),
+        AgentDefinition(
+            id="react-frontend-lead",
+            name="React & Next.js Lead Specialist",
+            role=AgentRole.FRONTEND_DEVELOPER,
+            description="Specialist in React 19, Next.js (App Router, Server Components), Tailwind, and accessible UI.",
+            allowed_tools=[ToolPermission.FILE_WRITE, ToolPermission.RUN_COMMAND],
+            required_skills=["react-nextjs-ui", "modern-frontend-ui"],
+            evaluation_criteria=["Server/Client boundary correctness", "WCAG AA compliance", "Zero mock data in production"]
+        ),
+        AgentDefinition(
+            id="angular-frontend-lead",
+            name="Angular Enterprise Lead Specialist",
+            role=AgentRole.FRONTEND_DEVELOPER,
+            description="Specialist in Angular 18+, Standalone Components, Signals, RxJS, NgRx, and OnPush change detection.",
+            allowed_tools=[ToolPermission.FILE_WRITE, ToolPermission.RUN_COMMAND],
+            required_skills=["angular-enterprise-ui", "modern-frontend-ui"],
+            evaluation_criteria=["Signals and reactive patterns", "OnPush performance", "Accessibility WCAG AA"]
+        ),
+        AgentDefinition(
+            id="mobile-engineer",
+            name="Mobile & Flutter Specialist",
+            role=AgentRole.MOBILE_DEVELOPER,
+            description="Specialist in mobile applications using Flutter, Dart, BLoC/Riverpod, and offline-first Clean Architecture.",
+            allowed_tools=[ToolPermission.FILE_WRITE, ToolPermission.RUN_COMMAND],
+            required_skills=["mobile-flutter-engineering", "modern-frontend-ui"],
+            evaluation_criteria=["Clean Architecture mobile separation", "Offline-first resilience", "State management predictability"]
+        ),
+        AgentDefinition(
+            id="devops-cloud-engineer",
+            name="DevOps & Cloud Infrastructure Engineer",
+            role=AgentRole.DEVOPS_ENGINEER,
+            description="Specialist in CI/CD pipelines, Docker multi-stage builds, Kubernetes, Helm, and Terraform IaC.",
+            allowed_tools=[ToolPermission.FILE_WRITE, ToolPermission.RUN_COMMAND, ToolPermission.GIT_OPERATIONS],
+            required_skills=["devops-ci-cd-pipelines", "docker-kubernetes-iac", "git-governance"],
+            evaluation_criteria=["Reproducible pipelines", "Non-root container security", "Immutable infrastructure"]
+        ),
     ]
