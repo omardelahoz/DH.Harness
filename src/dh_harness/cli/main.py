@@ -72,6 +72,18 @@ uiux_app = typer.Typer(
 )
 app.add_typer(uiux_app, name="uiux")
 
+hooks_app = typer.Typer(
+    name="hooks",
+    help="Lifecycle Hooks Engine, Pre/Post Guards & Execution Traceability (info.md Section 18)"
+)
+app.add_typer(hooks_app, name="hooks")
+
+mcp_app = typer.Typer(
+    name="mcp",
+    help="Dynamic Model Context Protocol (MCP) Manager & Server Supervision (info.md Section 7)"
+)
+app.add_typer(mcp_app, name="mcp")
+
 docs_app = typer.Typer(
     name="docs",
     help="Documentation Engine, Architecture Decision Records & C4 Diagrams (info.md Section 19)"
@@ -428,6 +440,51 @@ def audit_tests(path: str = typer.Argument("tests", help="Directory or file path
             title="TDD Quality Audit Alert",
             border_style="red"
         ))
+        raise typer.Exit(code=1)
+
+@tdd_app.command(name="complexity")
+def tdd_complexity(
+    path: str = typer.Argument("src", help="File or directory path to analyze cyclomatic complexity"),
+    max_score: int = typer.Option(10, "--max", "-m", help="Maximum acceptable cyclomatic complexity score")
+):
+    """Analyze cyclomatic complexity per function (McCabe score <= 10)."""
+    from dh_harness.tdd.complexity import ComplexityAnalyzer
+    analyzer = ComplexityAnalyzer(max_complexity=max_score)
+
+    console.print(f"[cyan][*] Analyzing cyclomatic complexity in '{path}' (threshold: {max_score})...[/cyan]")
+    if os.path.isfile(path):
+        report = analyzer.analyze_file(path)
+    else:
+        violations = []
+        files_count = 0
+        for root, dirs, files in os.walk(path):
+            dirs[:] = [d for d in dirs if d not in {".git", ".venv", "venv", "node_modules", "__pycache__"}]
+            for f in files:
+                if f.endswith((".py", ".cs", ".js", ".ts")):
+                    files_count += 1
+                    rep = analyzer.analyze_file(os.path.join(root, f))
+                    violations.extend(rep.violations)
+        from dh_harness.core.contracts import ComplexityReport
+        report = ComplexityReport(violations=violations, files_analyzed=files_count, passed=len(violations) == 0)
+
+    if report.passed:
+        console.print(Panel(
+            f"[bold green]✔ Clean Code Complexity Verified![/bold green]\n"
+            f"Analyzed {report.files_analyzed} file(s). All functions have cyclomatic complexity <= {max_score}.",
+            title="TDD Refactor Gate: PASSED",
+            border_style="green"
+        ))
+    else:
+        table = Table(title="Cyclomatic Complexity Violations (REFACTOR Required)")
+        table.add_column("File", style="cyan")
+        table.add_column("Function", style="magenta")
+        table.add_column("Line", style="yellow")
+        table.add_column("Score", style="bold red")
+        table.add_column("Max", style="green")
+
+        for v in report.violations:
+            table.add_row(v.file_path, v.function_name, str(v.line_number), str(v.complexity_score), str(v.max_allowed))
+        console.print(table)
         raise typer.Exit(code=1)
 
 @agents_app.command(name="list")
@@ -892,6 +949,200 @@ def security_check_cmd(command: str = typer.Argument(..., help="Shell or SQL com
             title="Command Guard Clean",
             border_style="green"
         ))
+
+@security_app.command(name="sast")
+def security_sast(path: str = typer.Argument("src", help="Directory or file path to run SAST scan")):
+    """Run Static Application Security Testing (SAST) on source code."""
+    from dh_harness.security.sast import SASTScanner
+    scanner = SASTScanner()
+    console.print(f"[cyan][*] Running SAST static analysis in '{path}'...[/cyan]")
+    if os.path.isfile(path):
+        findings = scanner.scan_file(path)
+        from dh_harness.core.contracts import SASTScanResult
+        res = SASTScanResult(findings=findings, total_files_scanned=1, passed=len(findings) == 0)
+    else:
+        res = scanner.scan_directory(path)
+
+    if res.passed:
+        console.print(Panel(
+            f"[bold green]✔ SAST Static Application Security Testing: PASSED[/bold green]\n"
+            f"Scanned {res.total_files_scanned} files. Zero security defects detected.",
+            border_style="green"
+        ))
+    else:
+        table = Table(title="SAST Security Defects Detected (info.md Section 14)")
+        table.add_column("Rule ID", style="bold red")
+        table.add_column("File:Line", style="cyan")
+        table.add_column("CWE", style="magenta")
+        table.add_column("Severity", style="yellow")
+        table.add_column("Description", style="white")
+
+        for f in res.findings:
+            table.add_row(f.rule_id, f"{f.file_path}:{f.line_number}", f.cwe_id, f.severity.value, f.description)
+        console.print(table)
+        raise typer.Exit(code=1)
+
+@security_app.command(name="sca")
+def security_sca(manifest: str = typer.Argument("package.json", help="Path to dependency manifest (package.json, requirements.txt, *.csproj)")):
+    """Run Software Composition Analysis (SCA) for vulnerable dependencies."""
+    from dh_harness.security.sca import SCAScanner
+    scanner = SCAScanner()
+    console.print(f"[cyan][*] Running SCA dependency analysis on '{manifest}'...[/cyan]")
+    res = scanner.scan_manifest(manifest)
+
+    if res.passed:
+        console.print(Panel(
+            f"[bold green]✔ SCA Vulnerability Scan: PASSED[/bold green]\n"
+            f"Scanned {res.total_dependencies} dependencies in '{manifest}'. Zero CVE vulnerabilities detected.",
+            border_style="green"
+        ))
+    else:
+        table = Table(title=f"SCA Vulnerable Dependencies Detected in {manifest}")
+        table.add_column("Package", style="bold red")
+        table.add_column("Installed", style="yellow")
+        table.add_column("CVE ID", style="magenta")
+        table.add_column("Fixed In", style="bold green")
+        table.add_column("Description", style="white")
+
+        for v in res.vulnerabilities:
+            table.add_row(v.package_name, v.installed_version, v.cve_id, v.fixed_version, v.description)
+        console.print(table)
+        raise typer.Exit(code=1)
+
+@security_app.command(name="stride")
+def security_stride(component_name: str = typer.Argument("Core Component", help="Name of architectural component to model")):
+    """Generate STRIDE Threat Model & risk assessment report."""
+    from dh_harness.security.stride import STRIDETaskThreatModeler
+    modeler = STRIDETaskThreatModeler()
+    comp = {
+        "name": component_name,
+        "has_auth": False,
+        "stores_secrets": True,
+        "has_rate_limiting": False,
+        "writes_audit_logs": False,
+        "input_validation": False,
+        "has_rbac": False
+    }
+    report = modeler.model_threats(component_name, comp)
+
+    table = Table(title=f"STRIDE Threat Model Report: {report.target} (Risk Score: {report.risk_score}%)")
+    table.add_column("Threat ID", style="bold cyan")
+    table.add_column("Category", style="magenta")
+    table.add_column("Severity", style="yellow")
+    table.add_column("Threat Description", style="white")
+    table.add_column("Mitigation Strategy", style="green")
+
+    for t in report.threats:
+        table.add_row(t.id, t.category.value, t.risk_level.value, t.threat_description, t.mitigation_strategy)
+    console.print(table)
+
+# --- Lifecycle Hooks Commands ---
+
+@hooks_app.command(name="list")
+def hooks_list():
+    """List registered lifecycle hook event types and interceptors."""
+    from dh_harness.core.contracts import HookEventType
+    table = Table(title="Antigravity Lifecycle Hooks Catalog (info.md Section 18)")
+    table.add_column("Hook Event", style="bold cyan")
+    table.add_column("Phase", style="magenta")
+    table.add_column("Description", style="green")
+
+    descriptions = {
+        HookEventType.SESSION_START: ("Initialization", "Triggered when agent session opens in workspace"),
+        HookEventType.PRE_TOOL_USE: ("Tool Invocation", "Pre-execution security checks and task validation"),
+        HookEventType.POST_TOOL_USE: ("Tool Invocation", "Post-execution tracing and affected files tracking"),
+        HookEventType.PRE_FILE_WRITE: ("File Mutation", "Validates task presence and scans proposed diffs for secrets"),
+        HookEventType.POST_FILE_WRITE: ("File Mutation", "Records file mutations in persistent traceability"),
+        HookEventType.PRE_GIT_PUSH: ("Version Control", "Enforces clean quality gates before remote push"),
+        HookEventType.ON_TASK_BLOCKED: ("Orchestration", "Captures blocker diagnostics and notifies DAG engine"),
+        HookEventType.STOP: ("Termination", "Verifies clean exit and blocker-free state before stop")
+    }
+
+    for event, (phase, desc) in descriptions.items():
+        table.add_row(event.value, phase, desc)
+    console.print(table)
+
+@hooks_app.command(name="audit")
+def hooks_audit():
+    """Display recent lifecycle hook execution audit log."""
+    from dh_harness.hooks.engine import LifecycleHooksEngine
+    engine = LifecycleHooksEngine()
+    logs = engine.get_execution_log()
+
+    if not logs:
+        console.print("[yellow][*] No hook events recorded in active session memory.[/yellow]")
+        return
+
+    table = Table(title="Lifecycle Hook Audit History")
+    table.add_column("Timestamp", style="cyan")
+    table.add_column("Event", style="magenta")
+    table.add_column("Payload Summary", style="white")
+
+    for entry in logs:
+        table.add_row(entry["timestamp"], entry["event"], str(entry["payload"]))
+    console.print(table)
+
+# --- Model Context Protocol (MCP) Commands ---
+
+@mcp_app.command(name="list")
+def mcp_list():
+    """List configured Model Context Protocol (MCP) servers and tools."""
+    from dh_harness.mcp.manager import MCPManager
+    manager = MCPManager()
+    servers = manager.discover_servers()
+
+    table = Table(title="Model Context Protocol (MCP) Servers (info.md Section 7)")
+    table.add_column("Server Name", style="bold cyan")
+    table.add_column("Command", style="magenta")
+    table.add_column("Tools", style="yellow")
+    table.add_column("Status", style="green")
+    table.add_column("Description", style="white")
+
+    for name, s in servers.items():
+        table.add_row(name, f"{s.command} {' '.join(s.args)}", str(s.tool_count), s.state.value, s.description)
+    console.print(table)
+
+@mcp_app.command(name="ping")
+def mcp_ping(server: str = typer.Argument(..., help="Server name to ping")):
+    """Ping an MCP server command to verify health and latency."""
+    from dh_harness.mcp.manager import MCPManager
+    manager = MCPManager()
+    success, latency_ms, err = manager.ping_server(server)
+
+    if success:
+        console.print(Panel(
+            f"[bold green]✔ MCP Server '{server}' is HEALTHY![/bold green]\n"
+            f"Latency: [cyan]{latency_ms} ms[/cyan]",
+            border_style="green"
+        ))
+    else:
+        console.print(Panel(
+            f"[bold red]✖ MCP Server '{server}' ping FAILED![/bold red]\n"
+            f"Error: {err}",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+
+@mcp_app.command(name="inspect")
+def mcp_inspect(server: str = typer.Argument(..., help="Server name to inspect")):
+    """Inspect exposed tools and schemas for an MCP server."""
+    import json
+    from dh_harness.mcp.manager import MCPManager
+    manager = MCPManager()
+    tools = manager.list_tools(server)
+
+    if not tools:
+        console.print(f"[yellow]No tools discovered for server '{server}'.[/yellow]")
+        return
+
+    table = Table(title=f"Tools exposed by MCP Server '{server}'")
+    table.add_column("Tool Name", style="bold cyan")
+    table.add_column("Description", style="white")
+    table.add_column("Parameters Schema", style="green")
+
+    for t in tools:
+        table.add_row(t.name, t.description, json.dumps(t.input_schema))
+    console.print(table)
 
 @quality_app.command(name="check")
 def quality_check(

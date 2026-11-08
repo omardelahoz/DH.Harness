@@ -83,6 +83,7 @@ El harness incorpora 11 motores especializados coordinados por el **Master Orche
    - **Bóveda de Evidencia RED (`RedEvidenceVault`):** Registra el hash SHA-256 de la ejecución fallida de la prueba antes de permitir cambios en código.
    - **Guardia de Modificación (`CodeModificationGuard`):** Bloquea cualquier edición en `src/` si no existe evidencia previa de prueba en rojo.
    - **Detector de Pruebas Falsas (`FalseTestDetector`):** Analiza el árbol sintáctico (AST) para erradicar tests cosméticos (tests vacíos, sin aserciones o con `assert True`).
+   - **TDD Refactor Gate & Cyclomatic Complexity Guard (`ComplexityAnalyzer`):** Calcula la complejidad ciclomática de McCabe por función y bloquea la finalización de tareas si la complejidad supera el umbral (default <= 10) sin pasar por la fase `REFACTOR`.
 
 3. **Master Orchestrator, DAG & Continuity (`src/dh_harness/orchestrator/`, `tasks/`, `continuity/`):**
    - Organiza tareas en un grafo acíclico dirigido (DAG) con ordenamiento topológico y detección de ciclos.
@@ -98,9 +99,11 @@ El harness incorpora 11 motores especializados coordinados por el **Master Orche
      - Detecta consultas SQL embebidas en controladores (`SQL_IN_CONTROLLER`).
 
 6. **Security & Secrets Engine (`src/dh_harness/security/`):**
-   - Escáner AST de secretos que detecta tokens de GitHub, llaves de AWS, private keys o passwords en connection strings.
-   - Auditor de licencias de dependencias según lista blanca SPDX (100% permisivas: `MIT`, `Apache-2.0`, `BSD`, `ISC`).
-   - Guardia contra sentencias SQL destructivas (`DROP`, `TRUNCATE`, `DELETE` sin `WHERE`).
+   - **SAST Multi-Lenguaje (`SASTScanner`):** Análisis estático para Python (eval, exec, subprocess con shell=True, deserialización pickle), C# (.NET) (SQL Injection en FromSqlRaw, deshabilitación de SSL) y JS/TS (innerHTML, eval, command injection).
+   - **SCA Dependency Scanner (`SCAScanner`):** Escaneo de dependencias en `requirements.txt`, `package.json` y `*.csproj` con base de datos de CVEs y versiones seguras recomendadas.
+   - **STRIDE Threat Modeling (`STRIDETaskThreatModeler`):** Generación automática de matrices de riesgo y estrategias de mitigación en las 6 categorías STRIDE.
+   - **Secret Scanner & Guard:** Detección AST de tokens y contraseñas expuestas, y protección contra comandos SQL destructivos (`DROP`, `TRUNCATE`, `DELETE` sin `WHERE`).
+   - **Auditor de Licencias SPDX:** Restricción a licencias 100% permisivas (`MIT`, `Apache-2.0`, `BSD`, `ISC`).
 
 7. **Quality Engine & WCAG 2.1 AA Accessibility (`src/dh_harness/quality/`, `uiux/`):**
    - Quality gates que consolidan pruebas unitarias, auditoría AST y validación de entregables.
@@ -116,10 +119,14 @@ El harness incorpora 11 motores especializados coordinados por el **Master Orche
    - Verificación de Definition of Done (DoD) con recolección de evidencias antes de cerrar tareas.
    - Soporte para ejecución concurrente mediante Git Worktrees aislados.
 
-10. **Lifecycle Hooks Engine (`src/dh_harness/hooks/`):**
-    - Puntos de intercepción configurables en `.agents/hooks.json` para eventos: `SESSION_START`, `PRE_TASK`, `POST_TASK` y `SESSION_END`.
+10. **Granular Lifecycle Hooks Engine (`src/dh_harness/hooks/`):**
+    - Intercepción granular de eventos: `SESSION_START`, `PRE_TOOL_USE`, `POST_TOOL_USE`, `PRE_FILE_WRITE` (escaneo preventivo de secretos antes de escribir), `POST_FILE_WRITE` (trazabilidad de archivos modificados), `PRE_GIT_PUSH` (bloqueo preventivo si hay quality gates fallidas), `ON_TASK_BLOCKED` y `STOP`.
 
-11. **Project Health Engine (`src/dh_harness/health/`):**
+11. **Dynamic MCP Manager (`src/dh_harness/mcp/`):**
+    - Descubrimiento dinámico de servidores y herramientas MCP desde `.agents/mcp_config.json`.
+    - Medición de latencia de servidores (*ping*), validación estricta de argumentos contra JSON Schema y sandbox seguro de ejecución.
+
+12. **Project Health Engine (`src/dh_harness/health/`):**
     - Diagnóstico multidimensional ponderado (0.0% a 100.0%) en 6 pilares de ingeniería, certificando preparación para producción.
 
 ---
@@ -277,7 +284,7 @@ DH.Harness/
 │   │   └── engineering-standards.md
 │   ├── agents/
 │   │   └── catalog.json
-│   ├── skills/                    # 9 Skills oficiales con especificación SKILL.md
+│   ├── skills/                    # 18 Skills oficiales con especificación SKILL.md
 │   │   ├── clean-architecture-backend/
 │   │   ├── database-migrations/
 │   │   ├── modern-frontend-ui/
@@ -295,29 +302,30 @@ DH.Harness/
 │   ├── specs/                     # Especificaciones funcionales
 │   └── memory/                    # Base de datos SQLite y checkpoints de sesión
 ├── src/
-│   └── dh_harness/                # Núcleo de la plataforma (11 motores de ingeniería)
+│   └── dh_harness/                # Núcleo de la plataforma (12 motores de ingeniería)
 │       ├── core/                  # Contratos Pydantic y modelos tipados
 │       ├── sdk/                   # Adaptador del SDK oficial google.antigravity
 │       ├── interaction/           # Clasificador de 5 modos de interacción
 │       ├── orchestrator/          # Orquestador maestro de flujos
 │       ├── tasks/                 # Grafo DAG y máquina de estados de tareas
 │       ├── continuity/            # Motor de continuidad ("¿Con qué continuamos?")
-│       ├── tdd/                   # Bóveda RED SHA-256, guardia de código y detector AST
+│       ├── tdd/                   # Bóveda RED SHA-256, guardia de código, detector AST y complejidad
 │       ├── memory/                # Memoria multi-nivel L1-L4 y Truncation Guard
 │       ├── skills/                # Registro y catálogo de skills
 │       ├── agents/                # Catálogo de agentes y motor de delegación
 │       ├── workflows/             # Workflows ejecutables y runner
 │       ├── git/                   # Gobernanza de ramas, commits y worktrees
-│       ├── security/              # Escáner AST de secretos y lista blanca SPDX
+│       ├── security/              # Escáner AST de secretos, SAST, SCA, STRIDE y lista blanca SPDX
 │       ├── quality/               # Quality gates y auditoría de calidad
 │       ├── uiux/                  # Auditor de accesibilidad WCAG 2.1 AA
 │       ├── architecture/          # Auditor estático de límites Clean Architecture
 │       ├── docs/                  # Gestor de ADRs y generador C4 Mermaid
-│       ├── hooks/                 # Motor de lifecycle hooks
+│       ├── hooks/                 # Motor de lifecycle hooks granulares
+│       ├── mcp/                   # Administrador dinámico de servidores y herramientas MCP
 │       ├── health/                # Motor de diagnóstico holístico de salud
 │       ├── release/               # Endurecimiento e2e y manifiesto de release
 │       └── cli/                   # Interfaz Typer/Rich
-├── tests/                         # Suite completa de pruebas automatizadas (136 tests)
+├── tests/                         # Suite completa de pruebas automatizadas (173 tests)
 ├── docs/decisions/                # 13 Architecture Decision Records (ADR-001 a ADR-013)
 ├── pyproject.toml                 # Empaquetado Python (Hatchling)
 └── package.json                   # Empaquetado npm

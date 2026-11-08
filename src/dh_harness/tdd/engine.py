@@ -26,6 +26,7 @@ class TDDEngine:
         self.red_evidence: Optional[str] = None
         self.green_evidence: Optional[str] = None
         self.history: List[Dict[str, str]] = []
+        self.complexity_violations: List[Dict[str, Any]] = []
 
     def record_test_failure(self, error_message: str):
         """Records evidence of failing test (RED state)."""
@@ -36,6 +37,20 @@ class TDDEngine:
         """Records evidence that test has passed (GREEN state)."""
         self.green_evidence = "Tests passed successfully (exit code 0)"
         self.history.append({"phase": "IMPLEMENT_GREEN", "evidence": self.green_evidence})
+
+    def record_complexity_violation(self, file_path: str, function_name: str, score: int):
+        """Records cyclomatic complexity violation requiring REFACTOR phase."""
+        self.complexity_violations.append({
+            "file": file_path,
+            "function": function_name,
+            "score": score
+        })
+        self.history.append({"complexity_violation": f"{file_path}:{function_name} score={score}"})
+
+    def resolve_complexity_violations(self):
+        """Marks complexity violations as resolved after clean refactoring."""
+        self.complexity_violations.clear()
+        self.history.append({"complexity_status": "CLEAN_REFACTORED"})
 
     def transition_to(self, next_phase: TDDPhase):
         """Validates and applies phase transition."""
@@ -52,6 +67,15 @@ class TDDEngine:
                 raise TDDCycleViolationError(
                     "Cannot transition to IMPLEMENT_GREEN without recorded RED test failure evidence. "
                     "Write a failing test first."
+                )
+
+        # Enforce REFACTOR if complexity violations exist before VERIFY
+        if next_phase == TDDPhase.VERIFY:
+            if self.complexity_violations:
+                raise TDDCycleViolationError(
+                    f"Cannot transition to VERIFY with active cyclomatic complexity violations "
+                    f"({len(self.complexity_violations)} function(s) exceeding threshold). "
+                    f"Perform REFACTOR phase first."
                 )
 
         self.current_phase = next_phase
