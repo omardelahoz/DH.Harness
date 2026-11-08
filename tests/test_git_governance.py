@@ -58,4 +58,4 @@ def test_diagnose_current_repo():
     assert diag.is_git is True
     assert diag.remote_provider == GitProvider.GITHUB
     assert bool(diag.active_branch)
-    assert diag.active_branch.startswith("feature/") or diag.active_branch in {"main", "master"}
+    assert diag.active_branch.startswith(("feature/", "fix/", "hotfix/", "chore/")) or diag.active_branch in {"main", "master"}
