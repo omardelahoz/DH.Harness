@@ -34,7 +34,7 @@ SECRET_RULE_DEFINITIONS: List[Tuple[str, re.Pattern, SecuritySeverity]] = [
 ]
 
 DEFAULT_IGNORED_DIRS = {
-    ".git", ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache", ".worktrees", "tests", ".engine"
+    ".git", ".venv", "venv", "node_modules", "__pycache__", ".pytest_cache", ".worktrees", "tests", ".harness"
 }
 
 class SecretScanner:

@@ -279,10 +279,10 @@ def init(
             shutil.copy(src_doc, dest_doc)
             console.print(f"[green][+] Created {doc_name} from template.[/green]")
 
-    # 4. Initialize SQLite verification database in .engine/
-    engine_dir = ws_path / ".engine"
-    engine_dir.mkdir(parents=True, exist_ok=True)
-    db_file = engine_dir / "agent_engine.db"
+    # 4. Initialize SQLite verification database in .project/memory/harness.db
+    memory_dir = proj_dir / "memory"
+    memory_dir.mkdir(parents=True, exist_ok=True)
+    db_file = memory_dir / "harness.db"
     if not db_file.exists():
         import sqlite3
         conn = sqlite3.connect(str(db_file))
@@ -309,16 +309,27 @@ def init(
                 FOREIGN KEY (task_id) REFERENCES tasks(id)
             )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS verifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                task_id TEXT,
+                verifier_name TEXT,
+                sha256_hash TEXT,
+                exit_code INTEGER,
+                output TEXT,
+                verified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
         conn.commit()
         conn.close()
-        console.print("[green][+] Initialized deterministic verification database in .engine/agent_engine.db[/green]")
+        console.print("[green][+] Initialized DH Harness verification database in .project/memory/harness.db[/green]")
 
     console.print(Panel(
         f"[bold green]✔ DH Engineering Harness Initialized Successfully![/bold green]\n\n"
         f"Workspace: [cyan]{ws_path}[/cyan]\n"
-        f"Included Skills: [cyan]9 Built-in Engineering Skills in .agents/skills/[/cyan]\n"
-        f"Agents Catalog: [cyan]6 Specialized Roles in .agents/agents/[/cyan]\n"
-        f"Memory & Governance: [cyan].project/ and .engine/ ready[/cyan]\n\n"
+        f"Included Skills: [cyan]18 Built-in Engineering Skills in .agents/skills/[/cyan]\n"
+        f"Agents Catalog: [cyan]14 Specialized Roles in .agents/agents/[/cyan]\n"
+        f"Memory & Governance: [cyan].project/ and .agents/ ready[/cyan]\n\n"
         f"[dim]Run 'dh-harness status' or 'dh-harness health' to inspect project state.[/dim]",
         title="Bootstrap Complete",
         border_style="green"
@@ -326,7 +337,7 @@ def init(
 
 @app.command()
 def status():
-    """Show project health, AEE tasks, and memory dashboard."""
+    """Show project health, tasks, and memory dashboard."""
     workspace = os.getcwd()
     memory = MemoryEngine(workspace)
     summary = memory.get_summary()
@@ -350,7 +361,7 @@ def status():
     table.add_row("Antigravity SDK", sdk_status, sdk_info.get("package", ""))
     
     aee_status = f"[green]{summary['completed']} Completed[/green], [yellow]{summary['running']} Running[/yellow], [red]{summary['blocked']} Blocked[/red]"
-    table.add_row("Deterministic AEE Engine", aee_status, f"Total Tasks: {summary['tasks_total']}")
+    table.add_row("DH Verification Engine", aee_status, f"Total Tasks: {summary['tasks_total']}")
 
     mem_status = "[green]Active (.project/)[/green]" if summary["project_memory_exists"] else "[yellow]Missing[/yellow]"
     table.add_row("Persistent Memory", mem_status, "Rules, specs, and status tracking")

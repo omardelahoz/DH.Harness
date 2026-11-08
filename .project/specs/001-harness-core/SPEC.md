@@ -6,7 +6,7 @@ Establecer los cimientos del DH Engineering Harness para Antigravity con:
 - Motor de clasificación de solicitudes (Interaction Classifier).
 - Motor de control TDD (RED/GREEN/REFACTOR/VERIFY).
 - Empaquetado dual: CLI de Node para `npm i -g dh-harness` y paquete Python `dh_harness`.
-- Soporte de ejecución determinista con Graviton TDD (AEE).
+- Soporte de ejecución determinista y calidad verificada con DH Engineering Harness.
 
 ## Alcance
 - `src/dh_harness/core/contracts.py`: Modelos Pydantic para clasificaciones, fases TDD y tareas.

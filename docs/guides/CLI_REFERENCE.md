@@ -7,7 +7,7 @@ El CLI de DH Engineering Harness puede ejecutarse tanto vía Node (`npx dh-harne
 ## Comandos Principales
 
 ### `status`
-Muestra el panel de salud del proyecto, el estado del SDK de Antigravity, el resumen de tareas en SQLite de Graviton AEE y la memoria `.project/`.
+Muestra el panel de salud del proyecto, el estado del SDK de Antigravity, el resumen de tareas en SQLite y la memoria `.project/`.
 ```bash
 npx dh-harness status
 ```
@@ -24,13 +24,19 @@ Ejecuta las puertas de calidad (quality gates) del proyecto, ejecutando la suite
 npx dh-harness check
 ```
 
+### `health`
+Evalúa los 6 pilares de salud del proyecto (Seguridad, TDD, Arquitectura, Git, Calidad y UI/UX). Umbral mínimo para producción: 100%.
+```bash
+npx dh-harness health
+```
+
 ---
 
-## Comandos Graviton AEE (`.engine/harness.py`)
+## Comandos de Módulos Especializados (`dh-harness`)
 
-- `python .engine/harness.py init`: Inicializa la base de datos SQLite `agent_engine.db`.
-- `python .engine/harness.py start-task <title> <desc>`: Registra una nueva tarea.
-- `python .engine/harness.py add-step <task_id> <orden> <comando> <expresión>`: Registra un paso con verificador determinista.
-- `python .engine/harness.py update-step <task_id> <orden> <comando> <expresión>`: Actualiza un paso y resetea su estado.
-- `python .engine/harness.py run-next <task_id>`: Ejecuta el siguiente paso pendiente y evalúa el verificador.
-- `python .engine/harness.py status <task_id>`: Muestra el estado detallado de pasos y verificaciones.
+- `dh-harness tdd audit-tests`: Audita que no existan pruebas falsas o cosméticas con el detector AST.
+- `dh-harness sec scan [path]`: Escanea el código en busca de secretos o credenciales expuestas.
+- `dh-harness arch audit [src]`: Audita deterministamente las fronteras de Clean Architecture.
+- `dh-harness git check-dod <id>`: Valida que la tarea cumpla con todos los criterios de Definition of Done.
+- `dh-harness skills list`: Consulta los 18 skills de ingeniería integrados en el arnés.
+- `dh-harness agents list`: Consulta el catálogo de 14 agentes especializados y sus permisos.

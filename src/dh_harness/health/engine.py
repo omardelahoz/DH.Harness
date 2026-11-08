@@ -62,7 +62,7 @@ class ProjectHealthEngine:
 
     def _check_tdd(self, workspace: str) -> Tuple[float, List[str]]:
         blockers: List[str] = []
-        db_path = os.path.join(workspace, ".engine", "agent_engine.db")
+        db_path = os.path.join(workspace, ".project", "memory", "harness.db")
 
         score = 100.0
         if os.path.exists(db_path):
@@ -73,7 +73,7 @@ class ProjectHealthEngine:
                 blocked_tasks = cur.fetchone()[0]
                 if blocked_tasks > 0:
                     score -= (blocked_tasks * 20.0)
-                    blockers.append(f"{blocked_tasks} task(s) currently BLOCKED in AEE SQLite engine.")
+                    blockers.append(f"{blocked_tasks} task(s) currently BLOCKED in DH Harness SQLite engine.")
                 conn.close()
             except Exception:
                 pass

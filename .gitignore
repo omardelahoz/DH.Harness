@@ -57,9 +57,9 @@ package-lock.json
 *.swp
 *.swo
 
-# Graviton Runtime Database (preserve schema and scripts, ignore local sqlite runtime instance)
+# DH Harness Runtime Database & Memory
+*.db
 *.db-journal
 *.db-wal
-.engine/agent_engine.db
 .project/memory/
 .worktrees/

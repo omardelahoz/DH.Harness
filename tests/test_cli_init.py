@@ -25,5 +25,6 @@ def test_cli_init_bootstraps_workspace(tmp_path):
     assert (target / "AGENTS.md").exists()
     assert (target / "GEMINI.md").exists()
 
-    # Check SQLite verification database initialized
-    assert (target / ".engine" / "agent_engine.db").exists()
+    # Check SQLite verification database initialized in .project/memory/harness.db
+    assert (target / ".project" / "memory" / "harness.db").exists()
+    assert not (target / ".engine").exists()

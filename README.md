@@ -48,7 +48,7 @@ flowchart TD
     
     subgraph RuntimeEnvironment ["Runtime & External Systems"]
         PyCLI --> SDK["Antigravity SDK (google.antigravity)"]
-        TDDEngine --> SQLiteDB[("Deterministic Verification DB (.engine)")]
+        TDDEngine --> SQLiteDB[("Deterministic Verification DB (.project/memory)")]
         Memory --> ProjMemory[".project/ (Rules, Specs, Tasks)"]
         MasterOrch --> GitRepo[("Git / GitHub Repository")]
     end

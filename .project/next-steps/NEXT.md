@@ -1,13 +1,7 @@
 # Next Steps (`.project/next-steps/NEXT.md`)
 
-1. Iniciar Task 1 en Graviton AEE:
-   `python .engine/harness.py start-task "Bootstrap DH Engineering Harness Foundation" "Implement core architecture, Antigravity SDK adapter, TDD engine, dual npm/Python packaging, and documentation."`
-2. Registrar pasos en AEE para:
-   - Paso 1: Configurar entorno virtual e instalar dependencias Python (incluido `google-antigravity`).
-   - Paso 2: Crear empaquetado dual (`pyproject.toml`, `package.json`, `bin/cli.js`).
-   - Paso 3: Implementar pruebas TDD (`tests/unit/`).
-   - Paso 4: Implementar código de producción en `src/dh_harness/`.
-   - Paso 5: Generar documentación exhaustiva (`README.md`, `docs/`).
-3. Ejecutar los pasos mediante `python .engine/harness.py run-next 1`.
-4. Validar estado `🟢 COMPLETED`.
+1. Continuar con la expansión modular de DH Engineering Harness (Ola 2: Seguridad Avanzada, Hooks Granulares y Dynamic MCP Manager).
+2. Desarrollar cada feature bajo el ciclo estricto de TDD: RED -> GREEN -> REFACTOR.
+3. Ejecutar la suite completa de pruebas (`pytest tests/`) y verificar calidad con `dh-harness health`.
+4. Validar que la tarea cumpla con la Definition of Done (`dh-harness git check-dod`).
 5. Publicar rama y crear Pull Request en GitHub.

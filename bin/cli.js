@@ -84,16 +84,7 @@ function main() {
   }
 
   const pythonBin = findPython();
-  const firstArg = args[0];
-
-  let pyArgs = [];
-  if (firstArg === 'engine' || firstArg === 'task') {
-    const harnessPy = path.join(PROJECT_ROOT, '.engine', 'harness.py');
-    pyArgs = [harnessPy, ...args.slice(1)];
-  } else {
-    // Forward to Python CLI package module
-    pyArgs = ['-m', 'dh_harness.cli.main', ...args];
-  }
+  const pyArgs = ['-m', 'dh_harness.cli.main', ...args];
 
   const proc = spawn(pythonBin, pyArgs, {
     cwd: PROJECT_ROOT,

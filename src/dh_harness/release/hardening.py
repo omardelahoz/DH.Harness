@@ -147,7 +147,7 @@ class ReleaseManager:
                 "package.json",
                 "pyproject.toml",
                 "README.md",
-                "ENGINE_INSTRUCTIONS.md",
+                "AGENTS.md",
                 "docs/decisions/"
             ]
         )

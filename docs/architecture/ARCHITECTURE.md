@@ -23,10 +23,9 @@ graph TD
         PyCLI --> SDKAdapter[Antigravity SDK Adapter<br/>src/dh_harness/sdk/adapter.py]
     end
 
-    subgraph "Graviton TDD Engine (.engine & .project)"
-        TDDEngine --> HarnessPy[.engine/harness.py]
-        HarnessPy --> Verifiers[.engine/verifiers.py]
-        HarnessPy --> DB[(.engine/agent_engine.db)]
+    subgraph "DH Harness Deterministic Engine & Memory (.project)"
+        TDDEngine --> HarnessDB[(.project/memory/harness.db)]
+        MemoryEng --> MemoryDB[(.project/memory/memory.db)]
         MemoryEng --> MarkdownMemory[.project/<br/>rules/ | specs/ | tasks/ | decisions/]
     end
 
@@ -40,6 +39,5 @@ graph TD
 ## 3. Principios de Separación de Responsabilidades
 
 1. **Google Antigravity:** Runtime de agentes, modelos de IA y herramientas nativas.
-2. **DH Engineering Harness:** Gobernanza, clasificación, control TDD, orquestación y auditoría.
-3. **Graviton AEE:** Motor de ejecución determinista local basado en SQLite y Zero-Trust.
-4. **Memoria Persistente (`.project/`):** Contexto estructurado en Markdown para trazabilidad humana y de agentes.
+2. **DH Engineering Harness:** Gobernanza, clasificación, control TDD, orquestación y auditoría determinista.
+3. **Memoria y Persistencia (`.project/`):** Contexto estructurado en Markdown y SQLite para trazabilidad y estado continuo.
