@@ -6,6 +6,15 @@
   "bin": {
     "dh-harness": "./bin/cli.js"
   },
+  "files": [
+    "bin",
+    "src",
+    ".agents",
+    "AGENTS.md",
+    "GEMINI.md",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "antigravity",
     "agentic",

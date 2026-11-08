@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green)](https://nodejs.org/)
-[![Tests](https://img.shields.io/badge/tests-145%20passed-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-191%20passed-brightgreen)](tests/)
 [![Health Score](https://img.shields.io/badge/health-100.0%25%20EXCELLENT-brightgreen)](#project-health-dashboard)
 [![SPDX Compliance](https://img.shields.io/badge/SPDX%20Whitelist-100%25%20Permissive-blue)](#security--spdx-license-whitelist)
 
@@ -133,7 +133,7 @@ El harness incorpora 11 motores especializados coordinados por el **Master Orche
 
 ## Ecosistema Preempaquetado: Skills y Agentes de Fábrica
 
-El harness incluye de fábrica en la carpeta `.agents/` los 9 skills de ingeniería y el catálogo de agentes especializados. **No requieren instalación por separado ni descargas adicionales:**
+El harness incluye de fábrica en la carpeta `.agents/` los 18 skills de ingeniería y el catálogo de agentes especializados. **No requieren instalación por separado ni descargas adicionales:**
 
 ### Catálogo de Skills Incorporados (`.agents/skills/`)
 
@@ -233,7 +233,7 @@ dh-harness init
 ```
 Este comando siembra automáticamente:
 - La carpeta `.project/` (rules, specs, tasks, memory, status).
-- La carpeta `.agents/` con los 9 skills oficiales, catálogo de agentes y reglas de ingeniería.
+- La carpeta `.agents/` con los 18 skills oficiales, catálogo de agentes y reglas de ingeniería.
 - La base de datos SQLite para verificación determinista de tareas.
 - Las guías maestras de operación `AGENTS.md` y `GEMINI.md`.
 
@@ -251,7 +251,7 @@ CORE COMMANDS:
   check                      Ejecuta suite de quality gates y pruebas unitarias
 
 ENGINEERING SUITES:
-  skills list                Muestra la tabla de los 9 skills de ingeniería incorporados
+  skills list                Muestra la tabla de los 18 skills de ingeniería incorporados
   skills show <id>           Muestra la especificación completa, triggers y reglas de un skill
   skills match "<prompt>"    Determina dinámicamente qué skills aplican a una tarea según triggers
   agents list                Lista los agentes especializados y sus herramientas permitidas
@@ -325,7 +325,7 @@ DH.Harness/
 │       ├── health/                # Motor de diagnóstico holístico de salud
 │       ├── release/               # Endurecimiento e2e y manifiesto de release
 │       └── cli/                   # Interfaz Typer/Rich
-├── tests/                         # Suite completa de pruebas automatizadas (173 tests)
+├── tests/                         # Suite completa de pruebas automatizadas (191 tests)
 ├── docs/decisions/                # 13 Architecture Decision Records (ADR-001 a ADR-013)
 ├── pyproject.toml                 # Empaquetado Python (Hatchling)
 └── package.json                   # Empaquetado npm

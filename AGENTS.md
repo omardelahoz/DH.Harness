@@ -35,7 +35,7 @@ Este documento es la especificación operativa para cualquier agente o modelo de
 | `dh-harness health` | Evalúa los 6 pilares de salud del proyecto (umbral mínimo para release: 100%). |
 | `dh-harness classify "<prompt>"` | Determina el modo de interacción y si se exige TDD estricto. |
 | `dh-harness check` | Ejecuta la suite de quality gates y pruebas unitarias. |
-| `dh-harness skills list` | Consulta los 9 skills de ingeniería integrados en el arnés. |
+| `dh-harness skills list` | Consulta los 18 skills de ingeniería integrados en el arnés. |
 | `dh-harness agents list` | Consulta el catálogo de agentes especializados y sus permisos. |
 | `dh-harness tdd audit-tests` | Audita que no existan pruebas falsas o cosméticas con el detector AST. |
 | `dh-harness git check-dod <id>` | Valida que la tarea cumpla con todos los criterios de Definition of Done. |
