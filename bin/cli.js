@@ -91,7 +91,7 @@ function main() {
   const pyArgs = ['-m', 'dh_harness.cli.main', ...args];
 
   const proc = spawn(pythonBin, pyArgs, {
-    cwd: PROJECT_ROOT,
+    cwd: process.cwd(),
     stdio: 'inherit',
     env: {
       ...process.env,
