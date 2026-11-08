@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org/)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green)](https://nodejs.org/)
-[![Tests](https://img.shields.io/badge/tests-136%20passed-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-145%20passed-brightgreen)](tests/)
 [![Health Score](https://img.shields.io/badge/health-100.0%25%20EXCELLENT-brightgreen)](#project-health-dashboard)
 [![SPDX Compliance](https://img.shields.io/badge/SPDX%20Whitelist-100%25%20Permissive-blue)](#security--spdx-license-whitelist)
 
@@ -130,10 +130,12 @@ El harness incluye de fábrica en la carpeta `.agents/` los 9 skills de ingenier
 
 ### Catálogo de Skills Incorporados (`.agents/skills/`)
 
+El arnés cuenta con **18 skills oficiales de ingeniería** empaquetados de fábrica:
+
 | Skill ID | Especialidad | Triggers | Reglas Clave |
 | :--- | :--- | :--- | :--- |
 | **`clean-architecture-backend`** | Backend & APIs | `backend`, `api`, `clean-architecture`, `repository` | Thin controllers, repositorios en Infraestructura, cero datos falsos. |
-| **`database-migrations`** | Datos & SQL | `database`, `sql`, `migration`, `dapper`, `ef-core` | Migraciones idempotentes y transaccionales, queries parametrizadas, seed data real. |
+| **`database-migrations-dapper-ef`**| Datos & Migraciones | `database`, `sql`, `migration`, `dapper`, `ef-core` | Migraciones idempotentes y transaccionales, queries parametrizadas, seed data real. |
 | **`modern-frontend-ui`** | Frontend & UI/UX | `frontend`, `ui`, `react`, `angular`, `wcag`, `a11y` | Accesibilidad WCAG 2.1 AA, estados loading/error, consumo de APIs reales. |
 | **`system-architecture-c4`** | Arquitectura & C4 | `architecture`, `c4`, `adr`, `system-design` | Diagramas Mermaid Contexto y Contenedor, gestión estandarizada de ADRs. |
 | **`appsec-threat-modeling`** | Seguridad & AppSec | `security`, `threat-modeling`, `owasp`, `secret`, `spdx` | Escáner AST de secretos, lista blanca SPDX, bloqueo de SQL destructivo. |
@@ -141,15 +143,45 @@ El harness incluye de fábrica en la carpeta `.agents/` los 9 skills de ingenier
 | **`git-governance`** | Git & DoD | `git`, `branch`, `commit`, `dod`, `worktree` | Ramas `feature/*`, Conventional Commits, verificación de DoD con evidencias. |
 | **`quality-engineering`** | Calidad & Gates | `quality`, `qa`, `code-review`, `gate` | Revisión independiente obligatoria (anti-self-review), quality gates. |
 | **`orchestrator-continuity`** | Orquestación & DAG | `orchestrator`, `classify`, `continue`, `dag` | Clasificación en 5 modos, resolución DAG, "¿Con qué continuamos?". |
+| **`dotnet-clean-architecture`** | .NET & C# Enterprise | `dotnet`, `c#`, `aspnet`, `dapper`, `efcore` | CQRS, Thin controllers, AsNoTracking en lecturas, consultas parametrizadas. |
+| **`python-fastapi-clean-architecture`** | Python & FastAPI | `python`, `fastapi`, `pydantic`, `sqlalchemy` | Schemas Pydantic v2 estrictos, sesiones async, inyección de dependencias. |
+| **`angular-enterprise-ui`** | Angular 18+ Enterprise | `angular`, `rxjs`, `signals`, `ngrx` | Standalone components, Signals, OnPush change detection, accesibilidad WCAG. |
+| **`react-nextjs-ui`** | React 19 & Next.js | `react`, `nextjs`, `tailwind`, `server-components` | Server/Client boundaries, loading skeletons, TanStack Query tipado. |
+| **`mobile-flutter-engineering`** | Mobile Multiplataforma | `flutter`, `dart`, `mobile`, `android`, `ios`, `bloc` | Clean Architecture móvil (Domain, Data, Presentation), BLoC, offline-first. |
+| **`postgresql-database-specialist`** | PostgreSQL Avanzado | `postgres`, `postgresql`, `psql`, `jsonb`, `gin-index` | Índices GIN/BRIN, particionamiento, migraciones transaccionales idempotentes. |
+| **`sqlserver-database-specialist`** | SQL Server Enterprise | `sqlserver`, `sql-server`, `tsql`, `t-sql` | RCSI snapshot isolation, índices columnares, planes de ejecución sin deadlocks. |
+| **`devops-ci-cd-pipelines`** | CI/CD & Delivery | `cicd`, `ci-cd`, `github-actions`, `azure-pipelines` | Quality gates fail-fast, caching de dependencias, Least Privilege OIDC. |
+| **`docker-kubernetes-iac`** | Contenedores & Cloud | `docker`, `kubernetes`, `k8s`, `helm`, `terraform` | Dockerfiles multi-stage no-root, health probes en K8s, infraestructura Terraform. |
 
 ### Catálogo de Agentes Especializados (`.agents/agents/catalog.json`)
 
+El arnés cuenta con **14 agentes especializados** con roles y herramientas delimitadas:
+
 - **`chief-orchestrator`:** Coordinador general, clasificador de intenciones y despachador de tareas.
 - **`solution-architect`:** Diseñador de arquitectura C4, auditor de límites de capas y redactor de ADRs.
-- **`senior-backend-engineer`:** Especialista en Clean Architecture, APIs tipadas y persistencia con Dapper/EF Core.
-- **`senior-frontend-engineer`:** Diseñador de interfaces responsivas y accesibles bajo WCAG 2.1 AA.
-- **`qa-engineer`:** Diseñador de pruebas unitarias y auditor de tests falsos.
-- **`security-auditor`:** Auditor de secretos, licencias de código abierto y prevención de vulnerabilidades.
+- **`developer-backend` / `senior-backend-engineer`:** Especialista general en backend y Clean Architecture.
+- **`dotnet-lead-engineer`:** Especialista líder en .NET 8/9, C#, ASP.NET Core, EF Core y Dapper.
+- **`python-lead-engineer`:** Especialista líder en Python 3.12, FastAPI, Pydantic v2 y SQLAlchemy async.
+- **`developer-frontend` / `senior-frontend-engineer`:** Diseñador general de interfaces web modernas.
+- **`react-frontend-lead`:** Especialista líder en React 19, Next.js App Router y Server Components.
+- **`angular-frontend-lead`:** Especialista líder en Angular 18+, Signals y Standalone Components.
+- **`mobile-engineer`:** Especialista en aplicaciones móviles nativas y Flutter multiplataforma con BLoC.
+- **`database-engineer`:** DBA especialista en esquemas relacionales y optimización de consultas.
+- **`devops-cloud-engineer`:** Especialista en pipelines CI/CD, Dockerfiles no-root, Kubernetes y Terraform.
+- **`qa-engineer`:** Diseñador de pruebas unitarias, auditor de tests falsos y planes de prueba.
+- **`independent-code-reviewer`:** Revisor independiente de código y arquitectura (anti-self-review).
+- **`security-auditor` / `security-engineer`:** Auditor de secretos AST, licencias SPDX y seguridad fail-closed.
+
+### Catálogo de Workflows Componibles (`src/dh_harness/workflows/`)
+
+Flujos ejecutables de ciclo completo auditados paso a paso:
+1. **`feature-development`:** Especificación C4 -> TDD RED -> Implementación GREEN -> Revisión independiente.
+2. **`bug-fix`:** Reproducción de defecto en RED -> Corrección mínima GREEN -> Revisión independiente.
+3. **`security-audit`:** Escaneo AST de secretos -> Threat modeling STRIDE -> Plan de remediación arquitectónica.
+4. **`api-development`:** Modelado y migración de BD -> Contrato TDD -> Endpoint HTTP -> Revisión independiente.
+5. **`mobile-feature-development`:** Especificación móvil -> BLoC State TDD RED -> Implementación Flutter GREEN -> QA Review.
+6. **`devops-pipeline-release`:** Auditoría de IaC/Dockerfile -> Definición de Pipeline CI/CD -> Quality Gate -> Despliegue.
+7. **`architecture-refactoring`:** Auditoría de capas -> Pruebas de caracterización RED -> Refactor GREEN -> Revisión.
 
 ---
 

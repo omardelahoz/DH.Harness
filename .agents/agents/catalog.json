@@ -4,7 +4,7 @@
     {
       "id": "chief-orchestrator",
       "name": "Chief Orchestrator Agent",
-      "role": "CHIEF_ORCHESTRATOR",
+      "role": "ORCHESTRATOR",
       "description": "Coordina el flujo de trabajo global, clasifica solicitudes y delega en especialistas.",
       "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND", "GIT_OPERATIONS"],
       "required_skills": ["orchestrator-continuity", "system-architecture-c4"],
@@ -17,7 +17,7 @@
     {
       "id": "solution-architect",
       "name": "Solution Architect Agent",
-      "role": "ARCHITECT",
+      "role": "SOLUTION_ARCHITECT",
       "description": "Diseña modelos C4, gestiona decisiones técnicas (ADRs) y audita límites de capas.",
       "allowed_tools": ["READ_ONLY", "FILE_WRITE"],
       "required_skills": ["system-architecture-c4", "clean-architecture-backend"],
@@ -30,7 +30,7 @@
     {
       "id": "senior-backend-engineer",
       "name": "Senior Backend Specialist",
-      "role": "DEVELOPER_BACKEND",
+      "role": "BACKEND_DEVELOPER",
       "description": "Implementa APIs robustas, repositorios desacoplados y servicios de aplicación.",
       "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
       "required_skills": ["clean-architecture-backend", "database-migrations", "tdd-test-automation"],
@@ -43,7 +43,7 @@
     {
       "id": "senior-frontend-engineer",
       "name": "Senior Frontend Specialist",
-      "role": "DEVELOPER_FRONTEND",
+      "role": "FRONTEND_DEVELOPER",
       "description": "Construye interfaces responsivas, accesibles y conectadas a APIs reales.",
       "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
       "required_skills": ["modern-frontend-ui"],
@@ -69,7 +69,7 @@
     {
       "id": "security-auditor",
       "name": "Security & License Auditor",
-      "role": "SECURITY_AUDITOR",
+      "role": "SECURITY_ENGINEER",
       "description": "Inspecciona secretos, audita licencias de dependencias y previene código inseguro.",
       "allowed_tools": ["READ_ONLY", "RUN_COMMAND"],
       "required_skills": ["appsec-threat-modeling"],
@@ -77,6 +77,84 @@
         "Cero secretos detectados por el AST scanner",
         "100% licencias compatibles con SPDX Whitelist",
         "Bloqueo estricto de SQL destructivo"
+      ]
+    },
+    {
+      "id": "dotnet-lead-engineer",
+      "name": ".NET & C# Lead Specialist",
+      "role": "BACKEND_DEVELOPER",
+      "description": "Especialista en .NET 8/9, C#, ASP.NET Core, EF Core, Dapper y Clean Architecture.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["dotnet-clean-architecture", "database-migrations", "tdd-test-automation"],
+      "evaluation_criteria": [
+        "Thin controllers y CQRS limpio",
+        "Consultas Dapper parametrizadas y AsNoTracking en EF Core",
+        "Cero bypass de capas hacia la base de datos"
+      ]
+    },
+    {
+      "id": "python-lead-engineer",
+      "name": "Python & FastAPI Lead Specialist",
+      "role": "BACKEND_DEVELOPER",
+      "description": "Especialista en Python 3.12, FastAPI, Pydantic v2, SQLAlchemy asíncrono y Celery.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["python-fastapi-clean-architecture", "clean-architecture-backend", "tdd-test-automation"],
+      "evaluation_criteria": [
+        "Inyección de dependencias tipada",
+        "Endpoints asíncronos y schemas validados",
+        "Manejo de sesiones DB transaccionales"
+      ]
+    },
+    {
+      "id": "react-frontend-lead",
+      "name": "React & Next.js Lead Specialist",
+      "role": "FRONTEND_DEVELOPER",
+      "description": "Especialista en React 19, Next.js (App Router, Server Components), Tailwind y UI accesible.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["react-nextjs-ui", "modern-frontend-ui"],
+      "evaluation_criteria": [
+        "Separación limpia de Server/Client Components",
+        "Accesibilidad WCAG 2.1 AA",
+        "Consumo exclusivo de endpoints backend reales"
+      ]
+    },
+    {
+      "id": "angular-frontend-lead",
+      "name": "Angular Enterprise Lead Specialist",
+      "role": "FRONTEND_DEVELOPER",
+      "description": "Especialista en Angular 18+, Standalone Components, Signals, RxJS, NgRx y OnPush.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["angular-enterprise-ui", "modern-frontend-ui"],
+      "evaluation_criteria": [
+        "Arquitectura reactiva con Signals y OnPush",
+        "Servicios HTTP desacoplados",
+        "Diseño responsivo sin desbordamiento"
+      ]
+    },
+    {
+      "id": "mobile-engineer",
+      "name": "Mobile & Flutter Specialist",
+      "role": "MOBILE_DEVELOPER",
+      "description": "Especialista en desarrollo móvil multiplataforma con Flutter, Dart, BLoC y Clean Architecture.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND"],
+      "required_skills": ["mobile-flutter-engineering", "modern-frontend-ui"],
+      "evaluation_criteria": [
+        "Separación estricta de capas Domain/Data/Presentation",
+        "Resiliencia offline-first con persistencia local",
+        "Gestión de estado predecible"
+      ]
+    },
+    {
+      "id": "devops-cloud-engineer",
+      "name": "DevOps & Cloud Infrastructure Engineer",
+      "role": "DEVOPS_ENGINEER",
+      "description": "Especialista en pipelines CI/CD, contenedores Docker no-root, Kubernetes, Helm y Terraform.",
+      "allowed_tools": ["READ_ONLY", "FILE_WRITE", "RUN_COMMAND", "GIT_OPERATIONS"],
+      "required_skills": ["devops-ci-cd-pipelines", "docker-kubernetes-iac", "git-governance"],
+      "evaluation_criteria": [
+        "Pipelines reproducibles con quality gates automáticas",
+        "Contenedores seguros multi-stage",
+        "Infraestructura inmutable como código (IaC)"
       ]
     }
   ]
