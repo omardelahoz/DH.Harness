@@ -42,3 +42,27 @@ def test_tdd_engine_blocks_skip_phases():
     with pytest.raises(TDDCycleViolationError):
         # Cannot jump from REQUIREMENT straight to DONE
         engine.transition_to(TDDPhase.DONE)
+
+def test_tdd_engine_unified_with_evidence_vault():
+    from dh_harness.tdd.evidence import TDDEvidenceVault
+    vault = TDDEvidenceVault(db_path=":memory:")
+    engine = TDDEngine(evidence_vault=vault, task_id="DH-500")
+
+    engine.transition_to(TDDPhase.TEST_RED)
+    engine.record_test_failure("AssertionError: 10 != 20", test_file="tests/test_math.py")
+
+    # Vault should now have valid RED evidence
+    assert vault.has_valid_red_evidence("DH-500") is True
+
+    # Transition to green succeeds because vault has valid evidence
+    engine.transition_to(TDDPhase.IMPLEMENT_GREEN)
+    assert engine.current_phase == TDDPhase.IMPLEMENT_GREEN
+
+    # Advance to DONE
+    engine.record_test_success()
+    engine.transition_to(TDDPhase.VERIFY)
+    engine.transition_to(TDDPhase.DONE)
+
+    # When reaching DONE, evidence is cleared
+    assert vault.has_valid_red_evidence("DH-500") is False
+    vault.close()

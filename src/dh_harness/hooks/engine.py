@@ -3,8 +3,9 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional, Callable, Any
 
-from dh_harness.core.contracts import HookEventType, HookExecutionResult
+from dh_harness.core.contracts import HookEventType, HookExecutionResult, InteractionMode
 from dh_harness.security.scanner import SecretScanner
+from dh_harness.tdd.guard import CodeModificationGuard
 
 class LifecycleHooksEngine:
     """
@@ -12,13 +13,14 @@ class LifecycleHooksEngine:
     Manages session lifecycle events and enforces pre/post-execution guards.
     """
 
-    def __init__(self):
+    def __init__(self, guard: Optional[CodeModificationGuard] = None):
         self._hooks: Dict[HookEventType, List[Callable[[Dict[str, Any]], HookExecutionResult]]] = {
             event: [] for event in HookEventType
         }
         self._affected_files: List[str] = []
         self._execution_log: List[Dict[str, Any]] = []
         self._secret_scanner = SecretScanner()
+        self._guard = guard
 
     def register_hook(
         self,
@@ -78,6 +80,17 @@ class LifecycleHooksEngine:
                         allowed=False,
                         reason="Pre-modification blocked: Modifying production code in src/ requires an active task assigned."
                     )
+
+                if self._guard is not None or context.get("enforce_tdd_guard"):
+                    guard_instance = self._guard or CodeModificationGuard()
+                    mode = context.get("mode", InteractionMode.DEVELOPMENT)
+                    decision = guard_instance.evaluate_modification(target_path, mode=mode, task_id=active_task)
+                    if not decision.allowed:
+                        return HookExecutionResult(
+                            event_type=HookEventType.PRE_TOOL_USE,
+                            allowed=False,
+                            reason=f"Pre-modification blocked by TDD Guard: {decision.reason}"
+                        )
 
         return HookExecutionResult(
             event_type=HookEventType.PRE_TOOL_USE,
@@ -139,6 +152,17 @@ class LifecycleHooksEngine:
                     allowed=False,
                     reason="Pre-file-write blocked: Modifying production code in src/ requires an active task assigned."
                 )
+
+            if self._guard is not None or context.get("enforce_tdd_guard"):
+                guard_instance = self._guard or CodeModificationGuard()
+                mode = context.get("mode", InteractionMode.DEVELOPMENT)
+                decision = guard_instance.evaluate_modification(file_path, mode=mode, task_id=active_task)
+                if not decision.allowed:
+                    return HookExecutionResult(
+                        event_type=HookEventType.PRE_FILE_WRITE,
+                        allowed=False,
+                        reason=f"Pre-file-write blocked by TDD Guard: {decision.reason}"
+                    )
 
         # Secret scanning on proposed content
         if proposed_content:

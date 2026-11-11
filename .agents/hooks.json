@@ -14,6 +14,12 @@
       "blocking": true
     },
     {
+      "name": "pre_file_write_tdd_guard",
+      "stage": "PRE_FILE_WRITE",
+      "action": "dh-harness tdd guard",
+      "blocking": true
+    },
+    {
       "name": "post_task_dod_check",
       "stage": "POST_TASK",
       "action": "dh-harness quality audit",

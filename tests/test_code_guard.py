@@ -35,9 +35,25 @@ def test_guard_permits_src_modification_with_valid_red_evidence():
     assert decision.allowed is True
 
 def test_guard_blocks_src_in_investigation_mode():
-    vault = TDDEvidenceVault()
+    vault = TDDEvidenceVault(db_path=":memory:")
     guard = CodeModificationGuard(vault)
 
     with pytest.raises(TDDGuardViolationError) as exc_info:
         guard.check_can_modify("src/dh_harness/core/foo.py", mode=InteractionMode.INVESTIGATION, task_id="DH-4")
     assert "investigation" in str(exc_info.value).lower()
+
+def test_guard_evaluate_modification_does_not_raise():
+    vault = TDDEvidenceVault(db_path=":memory:")
+    guard = CodeModificationGuard(vault)
+
+    decision = guard.evaluate_modification("src/dh_harness/foo.py", mode=InteractionMode.DEVELOPMENT, task_id="DH-9")
+    assert decision.allowed is False
+    assert "No verified RED evidence" in decision.reason
+
+def test_guard_protects_json_inside_src():
+    vault = TDDEvidenceVault(db_path=":memory:")
+    guard = CodeModificationGuard(vault)
+
+    decision = guard.evaluate_modification("src/dh_harness/catalog.json", mode=InteractionMode.DEVELOPMENT, task_id="DH-10")
+    assert decision.allowed is False
+    assert "No verified RED evidence" in decision.reason

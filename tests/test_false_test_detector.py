@@ -66,3 +66,59 @@ def test_exception_raising():
     detector = FalseTestDetector()
     defects = detector.inspect_source(code)
     assert len(defects) == 0
+
+def test_detect_variable_tautology():
+    code = """
+def test_var_tautology():
+    x = compute_value()
+    assert x == x
+"""
+    detector = FalseTestDetector()
+    defects = detector.inspect_source(code)
+    assert len(defects) == 1
+    assert defects[0].defect_type == TestDefectType.TAUTOLOGY_VARIABLE
+    assert "x == x" in defects[0].description
+
+def test_detect_unittest_variable_tautology():
+    code = """
+def test_unittest_tautology(self):
+    val = 10
+    self.assertEqual(val, val)
+"""
+    detector = FalseTestDetector()
+    defects = detector.inspect_source(code)
+    assert len(defects) == 1
+    assert defects[0].defect_type == TestDefectType.TAUTOLOGY_VARIABLE
+
+def test_detect_weak_assertion_len_non_negative():
+    code = """
+def test_weak_len():
+    items = [1, 2, 3]
+    assert len(items) >= 0
+"""
+    detector = FalseTestDetector()
+    defects = detector.inspect_source(code)
+    assert len(defects) == 1
+    assert defects[0].defect_type == TestDefectType.WEAK_ASSERTION_NON_NEGATIVE_LEN
+
+def test_detect_syntax_error_as_defect():
+    broken_code = """
+def test_syntax_broken(
+    assert True
+"""
+    detector = FalseTestDetector()
+    defects = detector.inspect_source(broken_code)
+    assert len(defects) == 1
+    assert defects[0].defect_type == TestDefectType.SYNTAX_ERROR
+    assert defects[0].severity == "CRITICAL"
+
+def test_detect_missing_production_import():
+    pure_mock_test = """
+import pytest
+
+def test_something():
+    assert 1 + 2 == 3
+"""
+    detector = FalseTestDetector()
+    defects = detector.inspect_source(pure_mock_test, check_production_import=True)
+    assert any(d.defect_type == TestDefectType.NO_PRODUCTION_IMPORT for d in defects)

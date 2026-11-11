@@ -10,6 +10,8 @@ from dh_harness.workflows.engine import (
     FeatureDevelopmentWorkflow,
     InvestigationWorkflow,
 )
+from dh_harness.tdd.evidence import TDDEvidenceVault
+from dh_harness.tdd.guard import CodeModificationGuard
 
 class MasterOrchestrator:
     """
@@ -17,9 +19,15 @@ class MasterOrchestrator:
     task scheduling, and continuity. Complies with Section 3 of info.md.
     """
 
-    def __init__(self, task_manager: Optional[TaskManager] = None):
+    def __init__(
+        self,
+        task_manager: Optional[TaskManager] = None,
+        evidence_vault: Optional[TDDEvidenceVault] = None
+    ):
         self.task_manager = task_manager or TaskManager()
         self.continuity_engine = ContinuityEngine(self.task_manager)
+        self.evidence_vault = evidence_vault or TDDEvidenceVault()
+        self.guard = CodeModificationGuard(self.evidence_vault)
         self._workflows = {
             InteractionMode.BUG_FIX: BugFixWorkflow(),
             InteractionMode.DEVELOPMENT: FeatureDevelopmentWorkflow(),
@@ -53,6 +61,7 @@ class MasterOrchestrator:
             "mode": classification.mode.value,
             "tdd_required": classification.tdd_required,
             "workflow": workflow.name if workflow else None,
+            "guard_enforced": classification.tdd_required,
             "status": "READY_FOR_EXECUTION",
             "message": f"Workflow '{workflow.name if workflow else 'None'}' selected. Strict TDD: {classification.tdd_required}."
         }

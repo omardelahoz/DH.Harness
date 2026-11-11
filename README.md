@@ -80,10 +80,11 @@ El harness incorpora 11 motores especializados coordinados por el **Master Orche
    - Modula el rigor automáticamente: no inicia ceremonias pesadas para preguntas teóricas y activa TDD estricto para código.
 
 2. **Deterministic TDD Engine (`src/dh_harness/tdd/`):**
-   - **Bóveda de Evidencia RED (`RedEvidenceVault`):** Registra el hash SHA-256 de la ejecución fallida de la prueba antes de permitir cambios en código.
-   - **Guardia de Modificación (`CodeModificationGuard`):** Bloquea cualquier edición en `src/` si no existe evidencia previa de prueba en rojo.
-   - **Detector de Pruebas Falsas (`FalseTestDetector`):** Analiza el árbol sintáctico (AST) para erradicar tests cosméticos (tests vacíos, sin aserciones o con `assert True`).
+   - **Bóveda Criptográfica y Runner Real (`TDDEvidenceVault`):** Ejecuta tests reales con runner controlado (`run_and_record_red`), valida fallos legítimos de aserción (rechazando tests que pasan, errores de importación o fallos de colección), calcula digests normalizados y persiste los registros en SQLite (`.project/memory/harness.db`) con encadenamiento de hashes SHA-256 anclado al árbol Git (`prev_hash` y `git_tree_hash`).
+   - **Guardia de Modificación (`CodeModificationGuard`):** Bloquea de forma mecánica cualquier edición en `src/` si no existe evidencia previa de prueba en rojo para la tarea activa. Conectado de forma bloqueante a la CLI (`dh-harness tdd guard`) y a los hooks de ciclo de vida (`PRE_TOOL_USE` y `PRE_FILE_WRITE`).
+   - **Detector de Pruebas Falsas (`FalseTestDetector`):** Analiza el árbol sintáctico (AST) para erradicar tests cosméticos o falsos: tests vacíos, sin aserciones, `assert True`, tautologías de constantes (`assert 1 == 1`), tautologías de variables (`assert x == x`, `assert x is x`, `assertEqual(a, a)`), aserciones débiles (`assert len(x) >= 0`), detección de `SyntaxError` y auditoría de importación de código productivo.
    - **TDD Refactor Gate & Cyclomatic Complexity Guard (`ComplexityAnalyzer`):** Calcula la complejidad ciclomática de McCabe por función y bloquea la finalización de tareas si la complejidad supera el umbral (default <= 10) sin pasar por la fase `REFACTOR`.
+   - **Unificación de Estado (`TDDEngine`):** Máquina de estados sincronizada directamente con la bóveda SQLite para validar la evidencia RED antes de permitir la transición a `IMPLEMENT_GREEN` y limpiar la evidencia al completar el ciclo en `DONE`.
 
 3. **Master Orchestrator, DAG & Continuity (`src/dh_harness/orchestrator/`, `tasks/`, `continuity/`):**
    - Organiza tareas en un grafo acíclico dirigido (DAG) con ordenamiento topológico y detección de ciclos.
@@ -256,7 +257,12 @@ ENGINEERING SUITES:
   skills match "<prompt>"    Determina dinámicamente qué skills aplican a una tarea según triggers
   agents list                Lista los agentes especializados y sus herramientas permitidas
   agents show <id>           Muestra permisos, habilidades requeridas y criterios de evaluación de un agente
-  tdd audit-tests [path]     Audita la suite de pruebas para detectar tests falsos o cosméticos
+  tdd guard <file> [--task-id <id>] [--mode <m>] Evalúa si la modificación está permitida por el TDD Guard
+  tdd red <task_id> <target> [--cmd <runner>]   Ejecuta test runner, valida fallo legítimo y persiste evidencia RED
+  tdd evidence <task_id>                        Consulta y muestra la evidencia RED criptográfica de una tarea
+  tdd verify-chain                              Audita la integridad de la cadena SHA-256 en SQLite
+  tdd audit-tests [path]                        Audita la suite de pruebas para detectar tests falsos o cosméticos
+  tdd complexity [path] [--max <score>]         Audita la complejidad ciclomática por función (McCabe <= 10)
   git check-dod <task_id>    Verifica los criterios de Definition of Done para una tarea
   git validate-commit "<msg>" Valida sintaxis Conventional Commits
   sec scan [path]            Escanea el código fuente en busca de secretos y credenciales expuestas

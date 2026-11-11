@@ -45,3 +45,27 @@ def test_cli_agents_benchmark():
     assert result.exit_code == 0
     assert "Agent Benchmark Leaderboard" in result.output
     assert "First-Pass Acc" in result.output
+
+
+def test_cli_tdd_guard_blocks_src_without_task():
+    result = runner.invoke(app, ["tdd", "guard", "src/dh_harness/tdd/engine.py"])
+    assert result.exit_code == 1
+    assert "Modification Blocked by TDD Guard" in result.output
+
+
+def test_cli_tdd_guard_permits_test_file():
+    result = runner.invoke(app, ["tdd", "guard", "tests/test_feature.py"])
+    assert result.exit_code == 0
+    assert "Modification Permitted" in result.output
+
+
+def test_cli_tdd_verify_chain():
+    result = runner.invoke(app, ["tdd", "verify-chain"])
+    assert result.exit_code == 0
+    assert "Cryptographic Chain Intact" in result.output
+
+
+def test_cli_tdd_evidence_not_found():
+    result = runner.invoke(app, ["tdd", "evidence", "NON_EXISTENT_TASK_ID"])
+    assert result.exit_code == 1
+    assert "No active RED evidence found" in result.output

@@ -43,3 +43,31 @@ def test_health_engine_subscore_breakdown():
     assert 0.0 <= health.architecture_health <= 100.0
     assert 0.0 <= health.git_governance_score <= 100.0
     assert 0.0 <= health.uiux_score <= 100.0
+
+def test_health_engine_tdd_detects_missing_tests(tmp_path):
+    # Workspace with src/ but no tests/
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "app.py").write_text("def run(): pass")
+
+    engine = ProjectHealthEngine()
+    score, blockers = engine._check_tdd(str(tmp_path))
+
+    assert score < 100.0
+    assert any("No 'tests/' directory found" in b for b in blockers)
+
+def test_health_engine_tdd_detects_false_test_defects(tmp_path):
+    # Workspace with tests containing a cosmetic/false test
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "app.py").write_text("def run(): pass")
+
+    tests_dir = tmp_path / "tests"
+    tests_dir.mkdir()
+    (tests_dir / "test_fake.py").write_text("def test_dummy(): assert True")
+
+    engine = ProjectHealthEngine()
+    score, blockers = engine._check_tdd(str(tmp_path))
+
+    assert score < 100.0
+    assert any("False test defect" in b for b in blockers)

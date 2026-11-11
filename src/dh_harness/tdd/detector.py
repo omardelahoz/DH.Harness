@@ -11,6 +11,10 @@ class TestDefectType(str, Enum):
     NO_ASSERTION = "NO_ASSERTION"
     TRIVIAL_ASSERTION_CONSTANT = "TRIVIAL_ASSERTION_CONSTANT"
     TRIVIAL_ASSERTION_TAUTOLOGY = "TRIVIAL_ASSERTION_TAUTOLOGY"
+    TAUTOLOGY_VARIABLE = "TAUTOLOGY_VARIABLE"
+    WEAK_ASSERTION_NON_NEGATIVE_LEN = "WEAK_ASSERTION_NON_NEGATIVE_LEN"
+    NO_PRODUCTION_IMPORT = "NO_PRODUCTION_IMPORT"
+    SYNTAX_ERROR = "SYNTAX_ERROR"
 
 class TestDefect(BaseModel):
     file_path: str = ""
@@ -24,17 +28,18 @@ class FalseTestDetector:
     """
     Static analyzer based on Python AST to detect cosmetic or false tests.
     Complies with Section 7.4 of info.md:
-    Detects empty tests, trivial assertions, tests with no asserts, and tautologies.
+    Detects empty tests, trivial assertions, missing asserts, tautologies,
+    weak assertions, syntax errors, and missing production imports.
     """
 
-    def inspect_file(self, file_path: str) -> List[TestDefect]:
+    def inspect_file(self, file_path: str, check_production_import: bool = False) -> List[TestDefect]:
         """Inspects a Python test file on disk."""
         if not os.path.exists(file_path):
             return []
         try:
             with open(file_path, "r", encoding="utf-8", errors="replace") as f:
                 source = f.read()
-            return self.inspect_source(source, file_path=file_path)
+            return self.inspect_source(source, file_path=file_path, check_production_import=check_production_import)
         except Exception as e:
             return [TestDefect(
                 file_path=file_path,
@@ -45,26 +50,59 @@ class FalseTestDetector:
                 severity="CRITICAL"
             )]
 
-    def inspect_directory(self, dir_path: str) -> Dict[str, List[TestDefect]]:
+    def inspect_directory(self, dir_path: str, check_production_import: bool = False) -> Dict[str, List[TestDefect]]:
         """Recursively inspects test files in a directory."""
         results = {}
         for root, _, files in os.walk(dir_path):
             for file in files:
                 if file.startswith("test_") and file.endswith(".py"):
                     full_path = os.path.join(root, file)
-                    defects = self.inspect_file(full_path)
+                    defects = self.inspect_file(full_path, check_production_import=check_production_import)
                     if defects:
                         results[full_path] = defects
         return results
 
-    def inspect_source(self, source_code: str, file_path: str = "") -> List[TestDefect]:
+    def inspect_source(
+        self,
+        source_code: str,
+        file_path: str = "",
+        check_production_import: bool = False
+    ) -> List[TestDefect]:
         """Inspects Python source code and returns list of defects found."""
         try:
             tree = ast.parse(source_code)
-        except SyntaxError:
-            return []
+        except SyntaxError as e:
+            return [TestDefect(
+                file_path=file_path,
+                function_name="<syntax_error>",
+                line_number=e.lineno or 1,
+                defect_type=TestDefectType.SYNTAX_ERROR,
+                description=f"SyntaxError in test file: {e.msg} at line {e.lineno}",
+                severity="CRITICAL"
+            )]
 
         defects: List[TestDefect] = []
+
+        if check_production_import:
+            has_prod_import = False
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        if not alias.name.startswith(("pytest", "unittest", "mock", "os", "sys", "typing")):
+                            has_prod_import = True
+                elif isinstance(node, ast.ImportFrom):
+                    mod = node.module or ""
+                    if not mod.startswith(("pytest", "unittest", "mock", "unittest.mock")):
+                        has_prod_import = True
+            if not has_prod_import:
+                defects.append(TestDefect(
+                    file_path=file_path,
+                    function_name="<module_imports>",
+                    line_number=1,
+                    defect_type=TestDefectType.NO_PRODUCTION_IMPORT,
+                    description="Test file does not import any production codebase modules or application components.",
+                    severity="WARNING"
+                ))
 
         for node in ast.walk(tree):
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -73,7 +111,12 @@ class FalseTestDetector:
 
         return defects
 
-    def _inspect_function(self, func_node: ast.FunctionDef | ast.AsyncFunctionDef, file_path: str, defects: List[TestDefect]):
+    def _inspect_function(
+        self,
+        func_node: ast.FunctionDef | ast.AsyncFunctionDef,
+        file_path: str,
+        defects: List[TestDefect]
+    ):
         # 1. Check for empty body
         body_statements = [
             stmt for stmt in func_node.body
@@ -107,6 +150,27 @@ class FalseTestDetector:
                 func = subnode.func
                 if isinstance(func, ast.Attribute) and func.attr.startswith("assert"):
                     has_assert_or_raises = True
+                    # Check for unittest tautology: self.assertEqual(x, x), self.assertIs(x, x)
+                    if func.attr in ("assertEqual", "assertIs") and len(subnode.args) >= 2:
+                        a0, a1 = subnode.args[0], subnode.args[1]
+                        if isinstance(a0, ast.Name) and isinstance(a1, ast.Name) and a0.id == a1.id:
+                            defects.append(TestDefect(
+                                file_path=file_path,
+                                function_name=func_node.name,
+                                line_number=subnode.lineno,
+                                defect_type=TestDefectType.TAUTOLOGY_VARIABLE,
+                                description=f"Trivial tautological assertion '{func.attr}({a0.id}, {a1.id})' is always true.",
+                                severity="CRITICAL"
+                            ))
+                        elif isinstance(a0, ast.Constant) and isinstance(a1, ast.Constant) and a0.value == a1.value:
+                            defects.append(TestDefect(
+                                file_path=file_path,
+                                function_name=func_node.name,
+                                line_number=subnode.lineno,
+                                defect_type=TestDefectType.TRIVIAL_ASSERTION_TAUTOLOGY,
+                                description=f"Trivial tautological assertion '{a0.value} == {a1.value}' is always true.",
+                                severity="CRITICAL"
+                            ))
 
             # Check for Python assert
             if isinstance(subnode, ast.Assert):
@@ -124,11 +188,14 @@ class FalseTestDetector:
                         severity="CRITICAL"
                     ))
 
-                # Check for tautology assert (assert 1 == 1, assert "a" == "a")
+                # Check for tautology assert (assert 1 == 1, assert "a" == "a", assert x == x)
                 elif isinstance(test_expr, ast.Compare):
                     left = test_expr.left
                     if test_expr.comparators and len(test_expr.comparators) == 1:
                         right = test_expr.comparators[0]
+                        op = test_expr.ops[0]
+
+                        # Constant tautology: assert 1 == 1
                         if isinstance(left, ast.Constant) and isinstance(right, ast.Constant):
                             if left.value == right.value:
                                 defects.append(TestDefect(
@@ -139,6 +206,31 @@ class FalseTestDetector:
                                     description=f"Trivial tautological assertion '{left.value} == {right.value}' is always true.",
                                     severity="CRITICAL"
                                 ))
+
+                        # Variable tautology: assert x == x or assert x is x
+                        elif isinstance(left, ast.Name) and isinstance(right, ast.Name):
+                            if left.id == right.id and isinstance(op, (ast.Eq, ast.Is)):
+                                defects.append(TestDefect(
+                                    file_path=file_path,
+                                    function_name=func_node.name,
+                                    line_number=subnode.lineno,
+                                    defect_type=TestDefectType.TAUTOLOGY_VARIABLE,
+                                    description=f"Trivial variable tautological assertion 'assert {left.id} == {right.id}' is always true.",
+                                    severity="CRITICAL"
+                                ))
+
+                        # Weak assertion: assert len(x) >= 0 or assert len(x) > -1
+                        if isinstance(left, ast.Call) and isinstance(left.func, ast.Name) and left.func.id == "len":
+                            if isinstance(right, ast.Constant):
+                                if (isinstance(op, ast.GtE) and right.value == 0) or (isinstance(op, ast.Gt) and right.value == -1):
+                                    defects.append(TestDefect(
+                                        file_path=file_path,
+                                        function_name=func_node.name,
+                                        line_number=subnode.lineno,
+                                        defect_type=TestDefectType.WEAK_ASSERTION_NON_NEGATIVE_LEN,
+                                        description="Weak assertion 'len(...) >= 0' is guaranteed by Python runtime and tests nothing.",
+                                        severity="CRITICAL"
+                                    ))
 
         if not has_assert_or_raises:
             defects.append(TestDefect(

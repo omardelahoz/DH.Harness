@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Optional, List, Dict
 from datetime import datetime
 import typer
 from rich.console import Console
@@ -536,6 +537,139 @@ def tdd_complexity(
         for v in report.violations:
             table.add_row(v.file_path, v.function_name, str(v.line_number), str(v.complexity_score), str(v.max_allowed))
         console.print(table)
+        raise typer.Exit(code=1)
+
+@tdd_app.command(name="guard")
+def tdd_guard(
+    file_path: str = typer.Argument(..., help="Target file path to verify for modification"),
+    task_id: Optional[str] = typer.Option(None, "--task-id", "-t", help="Active task ID requiring modification"),
+    mode: str = typer.Option("DEVELOPMENT", "--mode", "-m", help="Interaction mode (DEVELOPMENT, BUG_FIX, etc.)")
+):
+    """Evaluate whether modification to target file is permitted by TDD Guard."""
+    from dh_harness.tdd.guard import CodeModificationGuard
+    from dh_harness.core.contracts import InteractionMode
+
+    try:
+        interaction_mode = InteractionMode(mode.upper())
+    except Exception:
+        interaction_mode = InteractionMode.DEVELOPMENT
+
+    guard = CodeModificationGuard()
+    decision = guard.evaluate_modification(file_path, mode=interaction_mode, task_id=task_id)
+
+    if decision.allowed:
+        console.print(Panel(
+            f"[bold green]✔ Modification Permitted[/bold green]\n"
+            f"[bold]Target:[/bold] {file_path}\n"
+            f"[bold]Reason:[/bold] {decision.reason}",
+            title="TDD Code Modification Guard: ALLOWED",
+            border_style="green"
+        ))
+    else:
+        console.print(Panel(
+            f"[bold red]✖ Modification Blocked by TDD Guard[/bold red]\n"
+            f"[bold]Target:[/bold] {file_path}\n"
+            f"[bold]Reason:[/bold] {decision.reason}",
+            title="TDD Code Modification Guard: BLOCKED",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+
+@tdd_app.command(name="red")
+def tdd_red(
+    task_id: str = typer.Argument(..., help="Task ID to associate with the RED evidence"),
+    test_target: str = typer.Argument(..., help="Test file or pytest test target expression"),
+    cmd: Optional[str] = typer.Option(None, "--cmd", "-c", help="Custom test runner command string")
+):
+    """Execute test runner, verify genuine RED failure, and persist cryptographic evidence."""
+    import shlex
+    from dh_harness.tdd.evidence import TDDEvidenceVault, InvalidRedEvidenceError
+
+    runner_cmd = shlex.split(cmd) if cmd else None
+    vault = TDDEvidenceVault()
+    console.print(f"[cyan][*] Executing test runner for task '{task_id}' on target '{test_target}'...[/cyan]")
+
+    try:
+        record = vault.run_and_record_red(task_id=task_id, test_target=test_target, runner_cmd=runner_cmd)
+        console.print(Panel(
+            f"[bold green]✔ Legitimate RED Evidence Persisted![/bold green]\n\n"
+            f"[bold]Task ID:[/bold] {record.task_id}\n"
+            f"[bold]Test Target:[/bold] {record.test_file}\n"
+            f"[bold]Exit Code:[/bold] {record.exit_code}\n"
+            f"[bold]SHA-256 Hash:[/bold] [yellow]{record.sha256_hash}[/yellow]\n"
+            f"[bold]Prev Hash:[/bold] {record.prev_hash}\n"
+            f"[bold]Git Tree:[/bold] {record.git_tree_hash}\n"
+            f"[bold]Timestamp:[/bold] {record.timestamp}",
+            title="TDD RED Cryptographic Vault",
+            border_style="green"
+        ))
+    except InvalidRedEvidenceError as e:
+        console.print(Panel(
+            f"[bold red]✖ Invalid RED Evidence[/bold red]\n{str(e)}",
+            title="TDD RED Evidence Rejected",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+    except Exception as e:
+        console.print(Panel(
+            f"[bold red]✖ Execution Error[/bold red]\n{str(e)}",
+            title="TDD Runner Failure",
+            border_style="red"
+        ))
+        raise typer.Exit(code=1)
+
+@tdd_app.command(name="evidence")
+def tdd_evidence(
+    task_id: str = typer.Argument(..., help="Task ID to query RED evidence for")
+):
+    """Query and display recorded RED evidence for a task from SQLite."""
+    from dh_harness.tdd.evidence import TDDEvidenceVault
+
+    vault = TDDEvidenceVault()
+    record = vault.get_active_red_evidence(task_id)
+
+    if not record:
+        console.print(Panel(
+            f"[yellow]No active RED evidence found in vault for task '{task_id}'.[/yellow]",
+            title="TDD Evidence Vault",
+            border_style="yellow"
+        ))
+        raise typer.Exit(code=1)
+
+    console.print(Panel(
+        f"[bold]Task ID:[/bold] {record.task_id}\n"
+        f"[bold]Test File:[/bold] {record.test_file}\n"
+        f"[bold]Exit Code:[/bold] {record.exit_code}\n"
+        f"[bold]SHA-256 Digest:[/bold] [yellow]{record.sha256_hash}[/yellow]\n"
+        f"[bold]Prev Hash:[/bold] {record.prev_hash}\n"
+        f"[bold]Git Tree:[/bold] {record.git_tree_hash}\n"
+        f"[bold]Recorded At:[/bold] {record.timestamp}\n\n"
+        f"[bold]Failure Log Preview:[/bold]\n{record.failure_log[:500]}",
+        title=f"TDD Active RED Evidence: {task_id}",
+        border_style="cyan"
+    ))
+
+@tdd_app.command(name="verify-chain")
+def tdd_verify_chain():
+    """Audit the cryptographic integrity of the SQLite TDD evidence chain."""
+    from dh_harness.tdd.evidence import TDDEvidenceVault
+
+    vault = TDDEvidenceVault()
+    valid, reason = vault.verify_evidence_chain()
+
+    if valid:
+        console.print(Panel(
+            "[bold green]✔ Cryptographic Chain Intact![/bold green]\n"
+            "All historical TDD evidence records in SQLite verified successfully against SHA-256 digests and previous block links.",
+            title="TDD Blockchain Integrity Audit: PASSED",
+            border_style="green"
+        ))
+    else:
+        console.print(Panel(
+            f"[bold red]✖ Broken or Tampered Chain Detected![/bold red]\n{reason}",
+            title="TDD Blockchain Integrity Audit: FAILED",
+            border_style="red"
+        ))
         raise typer.Exit(code=1)
 
 @agents_app.command(name="list")

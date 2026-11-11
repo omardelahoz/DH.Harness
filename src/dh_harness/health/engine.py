@@ -8,6 +8,7 @@ from dh_harness.security.scanner import SecretScanner
 from dh_harness.security.licenses import LicenseAuditor
 from dh_harness.architecture.intelligence import ArchitectureAuditor
 from dh_harness.git.manager import GitGovernanceManager
+from dh_harness.tdd.detector import FalseTestDetector
 
 class ProjectHealthEngine:
     """
@@ -62,9 +63,34 @@ class ProjectHealthEngine:
 
     def _check_tdd(self, workspace: str) -> Tuple[float, List[str]]:
         blockers: List[str] = []
-        db_path = os.path.join(workspace, ".project", "memory", "harness.db")
-
         score = 100.0
+
+        tests_dir = os.path.join(workspace, "tests")
+        src_dir = os.path.join(workspace, "src")
+
+        # 1. Verify existence of test suite if production code exists
+        if os.path.exists(src_dir):
+            if not os.path.exists(tests_dir):
+                score -= 40.0
+                blockers.append("No 'tests/' directory found. TDD requires a test suite.")
+            else:
+                test_files = [f for root, _, files in os.walk(tests_dir) for f in files if f.startswith("test_") and f.endswith(".py")]
+                if not test_files:
+                    score -= 40.0
+                    blockers.append("No test files found in 'tests/'. TDD requires verifiable tests.")
+                else:
+                    # 2. Audit tests for cosmetic or false assertions using AST
+                    detector = FalseTestDetector()
+                    dir_defects = detector.inspect_directory(tests_dir)
+                    if dir_defects:
+                        for file_p, def_list in dir_defects.items():
+                            for d in def_list:
+                                blockers.append(f"False test defect in {file_p}:{d.line_number} ({d.defect_type.value}: {d.description})")
+                        penalty = min(50.0, len(dir_defects) * 15.0)
+                        score -= penalty
+
+        # 3. Check SQLite database for blocked tasks
+        db_path = os.path.join(workspace, ".project", "memory", "harness.db")
         if os.path.exists(db_path):
             try:
                 conn = sqlite3.connect(db_path)

@@ -59,3 +59,5 @@ def test_guard_permits_when_authorized():
 
     # Should not raise when authorized=True
     guard.guard(cmd, authorized=True)
+    res = guard.check_command(cmd)
+    assert res.is_destructive is True
